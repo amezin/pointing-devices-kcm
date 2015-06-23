@@ -52,7 +52,7 @@ public:
     bool setDeviceProperty(xcb_atom_t, const QVariant &);
     bool setDeviceProperty(const QByteArray &, const QVariant &);
 
-    QStringList devicePropertyNames() const;
+    QByteArrayList devicePropertyNames() const;
     QList<xcb_atom_t> devicePropertyAtoms() const;
 
     void processEvent(const xcb_input_property_event_t *);

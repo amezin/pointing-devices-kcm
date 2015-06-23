@@ -261,10 +261,10 @@ bool XInputDevice::setDeviceProperty(const QByteArray &name, const QVariant &val
     return setDeviceProperty(atom, value);
 }
 
-QStringList XInputDevice::devicePropertyNames() const
+QByteArrayList XInputDevice::devicePropertyNames() const
 {
     auto atoms = devicePropertyAtoms();
-    QStringList names;
+    QByteArrayList names;
     for (auto atom : atoms) {
         names.push_back(atomCache_->getName(atom));
     }
