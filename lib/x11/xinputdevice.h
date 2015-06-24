@@ -54,17 +54,20 @@ public:
 
     QByteArrayList devicePropertyNames() const;
     QList<xcb_atom_t> devicePropertyAtoms() const;
+    bool devicePropertyExists(xcb_atom_t) const;
 
     void processEvent(const xcb_input_property_event_t *);
     void processEvent(const xcb_input_hierarchy_info_t *);
 
 Q_SIGNALS:
+    void devicePropertyAdded(const QByteArray &);
+    void devicePropertyRemoved(const QByteArray &);
     void devicePropertyChanged(const QByteArray &);
     void enabledChanged();
     void typeChanged();
 
 private:
-    bool prefetchDeviceProperty(xcb_atom_t);
+    bool fetchDeviceProperty(xcb_atom_t);
     QVariant getDevicePropertyValue(const xcb_input_xi_get_property_reply_t *);
 
     template<typename T>

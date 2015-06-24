@@ -23,7 +23,7 @@ XInputDevice::XInputDevice(const xcb_input_xi_device_info_t *info, XcbAtomCache 
 
     auto properties = xcb_input_xi_list_properties_properties(reply.data());
     for (int i = 0; i < reply->num_properties; i++) {
-        prefetchDeviceProperty(properties[i]);
+        fetchDeviceProperty(properties[i]);
         atomCache->prefetch(properties[i]);
     }
 }
@@ -35,9 +35,14 @@ XInputDevice::~XInputDevice()
     }
 }
 
-bool XInputDevice::prefetchDeviceProperty(xcb_atom_t atom)
+bool XInputDevice::devicePropertyExists(xcb_atom_t atom) const
 {
-    if (properties_.contains(atom) || cookies_.contains(atom)) {
+    return properties_.contains(atom) || cookies_.contains(atom);
+}
+
+bool XInputDevice::fetchDeviceProperty(xcb_atom_t atom)
+{
+    if (devicePropertyExists(atom)) {
         return true;
     }
 
@@ -190,14 +195,12 @@ QVariant XInputDevice::deviceProperty(const QByteArray &name)
 
 bool XInputDevice::setDeviceProperty(xcb_atom_t atom, const QVariant &value)
 {
-    if (!properties_.contains(atom)) {
-        auto currentValue = deviceProperty(atom);
-        if (!currentValue.isValid()) {
-            return false;
-        }
-        if (currentValue == value) {
-            return true;
-        }
+    auto currentValue = deviceProperty(atom);
+    if (!currentValue.isValid()) {
+        return false;
+    }
+    if (currentValue == value) {
+        return true;
     }
 
     xcb_input_xi_change_property_items_t items;
@@ -282,17 +285,34 @@ void XInputDevice::processEvent(const xcb_input_property_event_t *e)
 {
     Q_ASSERT(e->deviceid == id_);
 
-    properties_.remove(e->property);
-    if (cookies_.contains(e->property)) {
-        xcb_discard_reply(connection(), cookies_[e->property].sequence);
-        cookies_.remove(e->property);
+    bool existBefore = devicePropertyExists(e->property);
+
+    bool isModified = bool(e->what & XCB_INPUT_PROPERTY_FLAG_MODIFIED);
+    bool isDeleted = bool(e->what & XCB_INPUT_PROPERTY_FLAG_DELETED);
+
+    if (!existBefore || isModified) {
+        properties_.remove(e->property);
+        if (cookies_.contains(e->property)) {
+            xcb_discard_reply(connection(), cookies_[e->property].sequence);
+            cookies_.remove(e->property);
+        }
     }
 
-    if (!(e->what & XCB_INPUT_PROPERTY_FLAG_DELETED)) {
-        prefetchDeviceProperty(e->property);
+    if (!isDeleted) {
+        fetchDeviceProperty(e->property);
     }
 
-    Q_EMIT devicePropertyChanged(atomCache_->getName(e->property));
+    bool existAfter = devicePropertyExists(e->property);
+    Q_ASSERT(existBefore || existAfter);
+
+    auto name = atomCache_->getName(e->property);
+    if (!existBefore) {
+        Q_EMIT devicePropertyAdded(name);
+    } else if (!existAfter) {
+        Q_EMIT devicePropertyRemoved(name);
+    } else if (isModified) {
+        Q_EMIT devicePropertyChanged(name);
+    }
 }
 
 void XInputDevice::processEvent(const xcb_input_hierarchy_info_t *e)
