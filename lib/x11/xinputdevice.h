@@ -54,7 +54,9 @@ public:
 
     QByteArrayList devicePropertyNames() const;
     QList<xcb_atom_t> devicePropertyAtoms() const;
+
     bool devicePropertyExists(xcb_atom_t) const;
+    bool devicePropertyExists(const QByteArray &) const;
 
     void processEvent(const xcb_input_property_event_t *);
     void processEvent(const xcb_input_hierarchy_info_t *);

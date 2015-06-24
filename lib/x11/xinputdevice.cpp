@@ -40,6 +40,11 @@ bool XInputDevice::devicePropertyExists(xcb_atom_t atom) const
     return properties_.contains(atom) || cookies_.contains(atom);
 }
 
+bool XInputDevice::devicePropertyExists(const QByteArray &name) const
+{
+    return devicePropertyExists(atomCache_->intern(name));
+}
+
 bool XInputDevice::fetchDeviceProperty(xcb_atom_t atom)
 {
     if (devicePropertyExists(atom)) {
