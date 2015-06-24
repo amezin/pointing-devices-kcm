@@ -6,18 +6,18 @@
 #include "xinputdevice.h"
 #include "config.h"
 
-class Xephyr : public QProcess
+class Xvfb : public QProcess
 {
 public:
-    explicit Xephyr(const QByteArray &display)
+    explicit Xvfb(const QByteArray &display)
         : display_(display)
     {
-        start(QLatin1String(XEPHYR_COMMAND), QStringList() << display);
+        start(QLatin1String(XVFB_COMMAND), QStringList() << display);
         waitForStarted();
         QThread::sleep(1);
     }
 
-    ~Xephyr() Q_DECL_OVERRIDE
+    ~Xvfb() Q_DECL_OVERRIDE
     {
         terminate();
         waitForFinished();
@@ -57,11 +57,11 @@ private Q_SLOTS:
 
     void testPropertyChange()
     {
-        Xephyr xephyr(":1234");
-        QCOMPARE(xephyr.state(), QProcess::Running);
+        Xvfb Xvfb(":1234");
+        QCOMPARE(Xvfb.state(), QProcess::Running);
 
-        XInputDeviceManager manager(xephyr.display());
-        auto dev = manager.device("Xephyr virtual mouse");
+        XInputDeviceManager manager(Xvfb.display());
+        auto dev = manager.device("Xvfb mouse");
         QVERIFY(dev);
 
         auto propertyName = QByteArrayLiteral("Device Accel Constant Deceleration");
@@ -86,11 +86,11 @@ private Q_SLOTS:
 
     void testListProperty()
     {
-        Xephyr xephyr(":1234");
-        QCOMPARE(xephyr.state(), QProcess::Running);
+        Xvfb Xvfb(":1234");
+        QCOMPARE(Xvfb.state(), QProcess::Running);
 
-        XInputDeviceManager manager(xephyr.display());
-        auto dev = manager.device("Xephyr virtual mouse");
+        XInputDeviceManager manager(Xvfb.display());
+        auto dev = manager.device("Xvfb mouse");
         QVERIFY(dev);
 
         auto propertyName = QByteArrayLiteral("Coordinate Transformation Matrix");
@@ -102,11 +102,11 @@ private Q_SLOTS:
 
     void testChangeListProperty()
     {
-        Xephyr xephyr(":1234");
-        QCOMPARE(xephyr.state(), QProcess::Running);
+        Xvfb Xvfb(":1234");
+        QCOMPARE(Xvfb.state(), QProcess::Running);
 
-        XInputDeviceManager manager(xephyr.display());
-        auto dev = manager.device("Xephyr virtual mouse");
+        XInputDeviceManager manager(Xvfb.display());
+        auto dev = manager.device("Xvfb mouse");
         QVERIFY(dev);
 
         auto propertyName = QByteArrayLiteral("Coordinate Transformation Matrix");
@@ -130,11 +130,11 @@ private Q_SLOTS:
 
     void testDisable()
     {
-        Xephyr xephyr(":1234");
-        QCOMPARE(xephyr.state(), QProcess::Running);
+        Xvfb Xvfb(":1234");
+        QCOMPARE(Xvfb.state(), QProcess::Running);
 
-        XInputDeviceManager manager(xephyr.display());
-        auto dev = manager.device("Xephyr virtual mouse");
+        XInputDeviceManager manager(Xvfb.display());
+        auto dev = manager.device("Xvfb mouse");
         QVERIFY(dev);
 
         QVERIFY(dev->setDeviceProperty("Device Enabled", false));

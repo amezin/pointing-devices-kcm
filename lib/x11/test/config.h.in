@@ -1,3 +1,3 @@
 #pragma once
 
-#cmakedefine XEPHYR_COMMAND "@XEPHYR_COMMAND@"
+#cmakedefine XVFB_COMMAND "@XVFB_COMMAND@"

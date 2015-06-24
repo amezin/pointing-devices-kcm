@@ -2,7 +2,8 @@ add_executable(eventmonitor eventmonitor.cpp)
 target_link_libraries(eventmonitor pointing-devices-x11)
 ecm_mark_as_test(eventmonitor)
 
-find_program(XEPHYR_COMMAND Xephyr)
+# TODO: find-modules with PkgConfig?
+find_program(XVFB_COMMAND Xvfb)
 configure_file(config.h.in config.h ESCAPE_QUOTES @ONLY)
 
 add_executable(test_xinputdevicemanager test_xinputdevicemanager.cpp)
