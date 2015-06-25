@@ -144,6 +144,31 @@ private Q_SLOTS:
         QCOMPARE(spy.count(), 1);
         QCOMPARE(dev->enabled(), false);
     }
+
+    void testDetach()
+    {
+        Xvfb Xvfb(":1234");
+        QCOMPARE(Xvfb.state(), QProcess::Running);
+
+        XInputDeviceManager manager(Xvfb.display());
+        auto dev = manager.device("Xvfb mouse");
+        QVERIFY(dev);
+
+        QCOMPARE(dev->type(), XCB_INPUT_DEVICE_TYPE_SLAVE_POINTER);
+
+        xcb_input_detach_slave_t change;
+        change.type = XCB_INPUT_HIERARCHY_CHANGE_TYPE_DETACH_SLAVE;
+        change.len = sizeof(change) / sizeof(uint32_t);
+        change.deviceid = dev->id();
+        xcb_input_xi_change_hierarchy(manager.connection(), 1,
+                                      reinterpret_cast<xcb_input_hierarchy_change_t *>(&change));
+        xcb_flush(manager.connection());
+
+        QSignalSpy spy(dev, SIGNAL(typeChanged()));
+        QVERIFY(spy.wait());
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(dev->type(), XCB_INPUT_DEVICE_TYPE_FLOATING_SLAVE);
+    }
 };
 
 QTEST_GUILESS_MAIN(XInputDeviceManagerTest)
