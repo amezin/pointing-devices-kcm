@@ -83,7 +83,7 @@ void XInputDeviceManager::processEvents()
 
 XInputDevice *XInputDeviceManager::device(xcb_input_device_id_t id) const
 {
-    for (auto device : devices_) {
+    Q_FOREACH (auto device, devices_) {
         if (device->id() == id) {
             return device;
         }
@@ -93,7 +93,7 @@ XInputDevice *XInputDeviceManager::device(xcb_input_device_id_t id) const
 
 XInputDevice *XInputDeviceManager::device(const char *name) const
 {
-    for (auto device : devices_) {
+    Q_FOREACH (auto device, devices_) {
         if (device->name() == name) {
             return device;
         }
@@ -157,7 +157,7 @@ void XInputDeviceManager::processEvent(const xcb_input_hierarchy_event_t *e)
         }
     }
 
-    for (auto cookie : cookies) {
+    Q_FOREACH (auto cookie, cookies) {
         addDevices(cookie);
     }
 

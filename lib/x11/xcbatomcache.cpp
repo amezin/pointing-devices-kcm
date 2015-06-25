@@ -9,10 +9,10 @@ XcbAtomCache::XcbAtomCache(xcb_connection_t *connection)
 
 XcbAtomCache::~XcbAtomCache()
 {
-    for (auto cookie : internCookies_) {
+    Q_FOREACH (auto cookie, internCookies_) {
         xcb_discard_reply(connection(), cookie.sequence);
     }
-    for (auto cookie : getNameCookies_) {
+    Q_FOREACH (auto cookie, getNameCookies_) {
         xcb_discard_reply(connection(), cookie.sequence);
     }
 }

@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
         qDebug() << "Device removed:" << dev->name();
     });
 
-    for (auto dev : manager.devices()) {
+    Q_FOREACH (auto dev, manager.devices()) {
         addDevice(dev);
     }
 

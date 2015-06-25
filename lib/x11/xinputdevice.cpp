@@ -30,7 +30,7 @@ XInputDevice::XInputDevice(const xcb_input_xi_device_info_t *info, XcbAtomCache 
 
 XInputDevice::~XInputDevice()
 {
-    for (auto cookie : cookies_) {
+    Q_FOREACH (auto cookie, cookies_) {
         xcb_discard_reply(connection(), cookie.sequence);
     }
 }
@@ -273,7 +273,7 @@ QByteArrayList XInputDevice::devicePropertyNames() const
 {
     auto atoms = devicePropertyAtoms();
     QByteArrayList names;
-    for (auto atom : atoms) {
+    Q_FOREACH (auto atom, atoms) {
         names.push_back(atomCache_->getName(atom));
     }
     return names;
