@@ -23,7 +23,7 @@ XInputDeviceManager::XInputDeviceManager(const char *display, QObject *parent)
         xcb_input_xi_event_mask_t mask;
     } mask;
     mask.head.deviceid = XCB_INPUT_DEVICE_ALL;
-    mask.head.mask_len = sizeof(mask.mask) / 4U;
+    mask.head.mask_len = sizeof(mask.mask) / sizeof(uint32_t);
     mask.mask = xcb_input_xi_event_mask_t(XCB_INPUT_XI_EVENT_MASK_PROPERTY |
                                           XCB_INPUT_XI_EVENT_MASK_HIERARCHY);
     xcb_input_xi_select_events(connection(), rootWindow(), 1, &mask.head);
