@@ -2,13 +2,13 @@
 
 #include <QObject>
 
-#include "pointing-devices-common_export.h"
+#include "pointingdevices_export.h"
 
 class InputDevice;
 
 #define InputDeviceManager_IID "org.kde.pointingdevices.devicemanager"
 
-class POINTING_DEVICES_COMMON_EXPORT InputDeviceManager : public QObject
+class POINTINGDEVICES_EXPORT InputDeviceManager : public QObject
 {
     Q_OBJECT
 public:

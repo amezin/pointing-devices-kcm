@@ -2,9 +2,9 @@
 
 #include "xcbobject.h"
 
-#include "pointing-devices-x11_export.h"
+#include "pointingdevices_x11_export.h"
 
-class POINTING_DEVICES_X11_EXPORT XcbConnection : public XcbObject
+class POINTINGDEVICES_X11_EXPORT XcbConnection : public XcbObject
 {
 public:
     explicit XcbConnection(const char *display = Q_NULLPTR)

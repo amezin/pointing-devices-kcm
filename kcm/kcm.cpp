@@ -8,7 +8,7 @@
 #include "devicemanager.h"
 #include "device.h"
 
-K_PLUGIN_FACTORY_WITH_JSON(PointingDevicesKCMFactory, "pointing-devices-kcm.json", registerPlugin<PointingDevicesKCM>();)
+K_PLUGIN_FACTORY_WITH_JSON(PointingDevicesKCMFactory, "kcm_pointingdevices.json", registerPlugin<PointingDevicesKCM>();)
 
 PointingDevicesKCM::PointingDevicesKCM(QObject *parent, const QVariantList &args)
     : KQuickAddons::ConfigModule(parent, args),
@@ -21,7 +21,7 @@ PointingDevicesKCM::PointingDevicesKCM(QObject *parent, const QVariantList &args
     qmlRegisterType<InputDeviceManager>();
     qmlRegisterType<InputDevice>();
 
-    KAboutData *about = new KAboutData("pointing-devices-kcm", i18n("Pointing Devices KCM"), "0.0.1");
+    KAboutData *about = new KAboutData("kcm_pointingdevices", i18n("Pointing Devices KCM"), "0.0.1");
     setAboutData(about);
 }
 

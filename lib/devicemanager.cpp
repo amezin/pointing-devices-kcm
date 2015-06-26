@@ -27,7 +27,7 @@ InputDevice *InputDeviceManager::deviceByIdentifier(const QString &id) const
 
 InputDeviceManager *InputDeviceManager::create()
 {
-    QPluginLoader loader(QStringLiteral("pointing-devices-x11"));
+    QPluginLoader loader(QStringLiteral("pointingdevices_x11"));
     if (!loader.instance()) {
         qCCritical(POINTINGDEVICES) << "Can't load plugin" << loader.fileName() << ":" << loader.errorString();
     }

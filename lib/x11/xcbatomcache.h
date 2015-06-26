@@ -5,10 +5,10 @@
 #include <QByteArray>
 #include <QHash>
 
-#include "pointing-devices-x11_export.h"
+#include "pointingdevices_x11_export.h"
 #include "xcbobject.h"
 
-class POINTING_DEVICES_X11_EXPORT XcbAtomCache : public XcbObject
+class POINTINGDEVICES_X11_EXPORT XcbAtomCache : public XcbObject
 {
 public:
     explicit XcbAtomCache(xcb_connection_t *);

@@ -19,4 +19,5 @@ include(KDECompilerSettings)
 include(ECMMarkAsTest)
 
 add_subdirectory(lib)
+add_subdirectory(kded)
 add_subdirectory(kcm)

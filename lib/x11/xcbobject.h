@@ -4,9 +4,9 @@
 
 #include <xcb/xcb.h>
 
-#include "pointing-devices-x11_export.h"
+#include "pointingdevices_x11_export.h"
 
-class POINTING_DEVICES_X11_EXPORT XcbObject
+class POINTINGDEVICES_X11_EXPORT XcbObject
 {
 public:
     explicit XcbObject(xcb_connection_t *connection)

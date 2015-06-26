@@ -1,13 +1,13 @@
 #pragma once
 
 #include "devicemanager.h"
-#include "pointing-devices-x11_export.h"
+#include "pointingdevices_x11_export.h"
 
 class XInputDevice;
 class XInputDeviceAdapter;
 class XInputDeviceManager;
 
-class POINTING_DEVICES_X11_EXPORT XInputDeviceManagerAdapter : public InputDeviceManager
+class POINTINGDEVICES_X11_EXPORT XInputDeviceManagerAdapter : public InputDeviceManager
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID InputDeviceManager_IID)

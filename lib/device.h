@@ -2,9 +2,9 @@
 
 #include <QObject>
 
-#include "pointing-devices-common_export.h"
+#include "pointingdevices_export.h"
 
-class POINTING_DEVICES_COMMON_EXPORT InputDevice : public QObject
+class POINTINGDEVICES_EXPORT InputDevice : public QObject
 {
     Q_OBJECT
 

@@ -6,15 +6,15 @@
 #include <xcb/xcb.h>
 #include <xcb/xinput.h>
 
-#include "pointing-devices-x11_export.h"
+#include "pointingdevices_x11_export.h"
 #include "xcbconnection.h"
 
 class QSocketNotifier;
 class XcbAtomCache;
 class XInputDevice;
 
-class POINTING_DEVICES_X11_EXPORT XInputDeviceManager : public QObject,
-                                                        public XcbConnection
+class POINTINGDEVICES_X11_EXPORT XInputDeviceManager : public QObject,
+                                                       public XcbConnection
 {
     Q_OBJECT
 
