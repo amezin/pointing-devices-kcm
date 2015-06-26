@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Pointing Devices Daemon
+Comment=Pointing Devices Daemon
+Type=Service
+Icon=preferences-desktop-mouse
+X-KDE-ServiceTypes=KDEDModule
+X-KDE-Library=pointingdevices
+X-KDE-DBus-ModuleName=pointingdevices
+X-KDE-Kded-autoload=true
+X-KDE-Kded-load-on-demand=false
+X-KDE-Kded-phase=1
