@@ -31,6 +31,14 @@ XInputDeviceManager::XInputDeviceManager(const char *display, QObject *parent)
     addDevices(xcb_input_xi_query_device_unchecked(connection(), XCB_INPUT_DEVICE_ALL));
 }
 
+XInputDeviceManager::~XInputDeviceManager()
+{
+    // Ensure XInputDevices are deleted before xcb_disconnect()
+    Q_FOREACH (auto dev, devices_) {
+        delete dev;
+    }
+}
+
 void XInputDeviceManager::addDevices(xcb_input_xi_query_device_reply_t *reply)
 {
     for (auto i = xcb_input_xi_query_device_infos_iterator(reply); i.rem;
@@ -51,10 +59,6 @@ void XInputDeviceManager::addDevices(xcb_input_xi_query_device_cookie_t cookie)
         return;
     }
     addDevices(reply.data());
-}
-
-XInputDeviceManager::~XInputDeviceManager()
-{
 }
 
 xcb_window_t XInputDeviceManager::rootWindow() const
