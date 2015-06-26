@@ -7,8 +7,12 @@ add_library(pointing-devices-x11 SHARED
             xcbatomcache.cpp
             xinputdevice.h
             xinputdevice.cpp
+            xinputdeviceadapter.h
+            xinputdeviceadapter.cpp
             xinputdevicemanager.h
-            xinputdevicemanager.cpp)
+            xinputdevicemanager.cpp
+            xinputdevicemanageradapter.h
+            xinputdevicemanageradapter.cpp)
 target_link_libraries(pointing-devices-x11
                       pointing-devices-common
                       Qt5::Core
@@ -22,3 +26,5 @@ target_include_directories(pointing-devices-x11 PUBLIC
 generate_export_header(pointing-devices-x11)
 
 add_subdirectory(test)
+
+install(TARGETS pointing-devices-x11 DESTINATION ${PLUGIN_INSTALL_DIR})
