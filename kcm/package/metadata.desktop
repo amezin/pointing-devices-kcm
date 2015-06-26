@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=Pointing Devices
+Comment=Pointing Devices
+Icon=preferences-desktop-mouse
+Encoding=UTF-8
+Keywords=
+Type=Service
+X-KDE-ParentApp=
+X-KDE-PluginInfo-Author=Alexander Mezin
+X-KDE-PluginInfo-Email=mezin.alexander@gmail.com
+X-KDE-PluginInfo-License=GPL
+X-KDE-PluginInfo-Name=pointing-devices-kcm
+X-KDE-PluginInfo-Version=
+X-KDE-PluginInfo-Website=
+X-KDE-ServiceTypes=Plasma/Generic
+X-Plasma-API=declarativeappletscript
+
+X-Plasma-MainScript=ui/main.qml
+X-Plasma-RemoteLocation=

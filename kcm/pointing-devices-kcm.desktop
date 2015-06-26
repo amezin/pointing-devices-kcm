@@ -1,0 +1,13 @@
+[Desktop Entry]
+Exec=kcmshell5 pointing-devices-kcm
+Icon=preferences-desktop-mouse
+Type=Service
+
+X-KDE-ServiceTypes=KCModule
+X-KDE-Library=pointing-devices-kcm
+X-KDE-ParentApp=kcontrol
+X-KDE-System-Settings-Parent-Category=input-devices
+
+Name=Pointing Devices
+Comment=Pointing Devices
+Categories=Qt;KDE;X-KDE-settings-hardware;
