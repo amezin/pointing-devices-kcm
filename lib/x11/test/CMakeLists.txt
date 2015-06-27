@@ -6,7 +6,7 @@ ecm_mark_as_test(eventmonitor)
 find_program(XVFB_COMMAND Xvfb)
 configure_file(config.h.in config.h ESCAPE_QUOTES @ONLY)
 
-add_executable(test_xinputdevicemanager test_xinputdevicemanager.cpp)
+add_executable(test_xinputdevicemanager test_xinputdevicemanager.cpp xvfb.h)
 target_link_libraries(test_xinputdevicemanager pointingdevices_x11 Qt5::Test)
 add_test(test_xinputdevicemanager test_xinputdevicemanager)
 ecm_mark_as_test(test_xinputdevicemanager)
