@@ -1,7 +1,6 @@
-#include "xcbatomcache.h"
-
 #include <QtTest>
 
+#include "xcbatomcache.h"
 #include "xcbconnection.h"
 
 class XcbAtomCacheTest : public QObject

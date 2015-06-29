@@ -1,7 +1,6 @@
-#include "xinputdevicemanager.h"
-
 #include <QtTest>
 
+#include "xinputdevicemanager.h"
 #include "xinputdevice.h"
 #include "xvfb.h"
 
