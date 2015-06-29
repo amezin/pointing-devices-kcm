@@ -1,6 +1,6 @@
-#include "devicemanager.h"
-
 #include <QtTest>
+
+#include "devicemanager.h"
 
 class DeviceManagerTest : public QObject
 {
