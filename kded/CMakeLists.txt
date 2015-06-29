@@ -1,4 +1,3 @@
-find_package(KF5 REQUIRED COMPONENTS CoreAddons DBusAddons)
 
 add_library(kded_pointingdevices SHARED kded.h kded.cpp)
 target_link_libraries(kded_pointingdevices KF5::CoreAddons KF5::DBusAddons)

@@ -1,6 +1,3 @@
-find_package(Qt5 REQUIRED COMPONENTS Quick)
-find_package(KF5 REQUIRED COMPONENTS Declarative I18n CoreAddons Package)
-
 add_library(kcm_pointingdevices MODULE kcm.h kcm.cpp)
 target_link_libraries(kcm_pointingdevices
                       Qt5::Quick
