@@ -10,7 +10,7 @@ class POINTINGDEVICES_EXPORT InputDevice : public QObject
 
     Q_PROPERTY(QByteArrayList supportedProperties READ supportedProperties NOTIFY supportedPropertiesChanged)
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
-    Q_PROPERTY(QString identifier READ identifier NOTIFY identifierChanged)
+    Q_PROPERTY(QString identifier READ identifier CONSTANT)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
 public:
     explicit InputDevice(QObject *parent);
@@ -27,6 +27,5 @@ public:
 Q_SIGNALS:
     void supportedPropertiesChanged();
     void nameChanged();
-    void identifierChanged();
     void enabledChanged();
 };
