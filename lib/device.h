@@ -16,7 +16,7 @@ public:
     explicit InputDevice(QObject *parent);
     ~InputDevice() Q_DECL_OVERRIDE;
 
-    virtual QByteArrayList supportedProperties() const = 0;
+    virtual QByteArrayList supportedProperties() const;
 
     virtual QString name() const = 0;
     virtual QString identifier() const = 0;
