@@ -75,7 +75,8 @@ void XInputDeviceManagerAdapter::addDevice(XInputDevice *device)
         return;
     }
 
-    if (!device->devicePropertyExists(QByteArrayLiteral("Device Product ID"))) {
+    static const auto DeviceProductId = QByteArrayLiteral("Device Product ID");
+    if (!device->devicePropertyExists(DeviceProductId)) {
         return;
     }
 
@@ -112,7 +113,7 @@ void XInputDeviceManagerAdapter::handleDeviceTypeChange()
 
 void XInputDeviceManagerAdapter::handleDeviceProperyAdd(const QByteArray &name)
 {
-    if (name == QByteArrayLiteral("Device Product ID")) {
+    if (name == "Device Product ID") {
         auto device = qobject_cast<XInputDevice *>(sender());
         Q_ASSERT(device);
 
@@ -122,7 +123,7 @@ void XInputDeviceManagerAdapter::handleDeviceProperyAdd(const QByteArray &name)
 
 void XInputDeviceManagerAdapter::handleDeviceProperyRemove(const QByteArray &name)
 {
-    if (name == QByteArrayLiteral("Device Product ID")) {
+    if (name == "Device Product ID") {
         auto device = qobject_cast<XInputDevice *>(sender());
         Q_ASSERT(device);
 
