@@ -1,7 +1,8 @@
 #include "devicemanager.h"
 
-#include <QPluginLoader>
 #include <QScopedPointer>
+#include <KPluginLoader>
+#include <KPluginFactory>
 
 #include "device.h"
 #include "log.h"
@@ -27,11 +28,11 @@ InputDevice *InputDeviceManager::deviceByIdentifier(const QString &id) const
 
 InputDeviceManager *InputDeviceManager::create()
 {
-    QPluginLoader loader(QStringLiteral("pointingdevices_x11"));
-    if (!loader.instance()) {
+    KPluginLoader loader(QStringLiteral("pointingdevices_x11"));
+    if (!loader.factory()) {
         qCCritical(POINTINGDEVICES) << "Can't load plugin" << loader.fileName() << ":" << loader.errorString();
     }
-    return qobject_cast<InputDeviceManager *>(loader.instance());
+    return loader.factory()->create<InputDeviceManager>();
 }
 
 InputDeviceManager *InputDeviceManager::instance()

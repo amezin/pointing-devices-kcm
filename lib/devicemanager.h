@@ -6,8 +6,6 @@
 
 class InputDevice;
 
-#define InputDeviceManager_IID "org.kde.pointingdevices.devicemanager"
-
 class POINTINGDEVICES_EXPORT InputDeviceManager : public QObject
 {
     Q_OBJECT

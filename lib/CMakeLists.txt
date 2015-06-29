@@ -5,7 +5,7 @@ add_library(pointingdevices SHARED
             devicemanager.cpp
             log.h
             log.cpp)
-target_link_libraries(pointingdevices Qt5::Core)
+target_link_libraries(pointingdevices Qt5::Core KF5::CoreAddons)
 target_include_directories(pointingdevices INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 generate_export_header(pointingdevices)

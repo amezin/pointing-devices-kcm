@@ -1,12 +1,34 @@
 #include "xinputdevicemanageradapter.h"
 
+#include <KPluginFactory>
+
 #include "xinputdevicemanager.h"
 #include "xinputdevice.h"
 #include "xinputdeviceadapter.h"
 
-XInputDeviceManagerAdapter::XInputDeviceManagerAdapter(QObject *parent)
+K_PLUGIN_FACTORY(XInputDeviceManagerFactory, registerPlugin<XInputDeviceManagerAdapter>();)
+
+XInputDeviceManagerAdapter::XInputDeviceManagerAdapter(XInputDeviceManager *impl,
+                                                       QObject *parent)
+    : InputDeviceManager(parent),
+      impl(impl)
+{
+    init();
+}
+
+XInputDeviceManagerAdapter::XInputDeviceManagerAdapter(QObject *parent,
+                                                       const QVariantList &)
     : InputDeviceManager(parent),
       impl(new XInputDeviceManager(Q_NULLPTR, this))
+{
+    init();
+}
+
+XInputDeviceManagerAdapter::~XInputDeviceManagerAdapter()
+{
+}
+
+void XInputDeviceManagerAdapter::init()
 {
     connect(impl, &XInputDeviceManager::deviceAdded,
             this, &XInputDeviceManagerAdapter::addDevice);
@@ -16,10 +38,6 @@ XInputDeviceManagerAdapter::XInputDeviceManagerAdapter(QObject *parent)
     Q_FOREACH (auto device, impl->devices()) {
         addDevice(device);
     }
-}
-
-XInputDeviceManagerAdapter::~XInputDeviceManagerAdapter()
-{
 }
 
 QList<InputDevice *> XInputDeviceManagerAdapter::devices() const
@@ -111,3 +129,5 @@ void XInputDeviceManagerAdapter::handleDeviceProperyRemove(const QByteArray &nam
         removeDevice(device);
     }
 }
+
+#include "xinputdevicemanageradapter.moc"
