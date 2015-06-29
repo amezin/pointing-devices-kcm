@@ -1,6 +1,5 @@
 add_executable(eventmonitor eventmonitor.cpp)
 target_link_libraries(eventmonitor pointingdevices_x11)
-ecm_mark_as_test(eventmonitor)
 
 # TODO: find-modules with PkgConfig?
 find_program(XVFB_COMMAND Xvfb)
