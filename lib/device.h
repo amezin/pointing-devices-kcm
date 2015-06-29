@@ -12,7 +12,22 @@ class POINTINGDEVICES_EXPORT InputDevice : public QObject
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
     Q_PROPERTY(QString identifier READ identifier CONSTANT)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
+
+    Q_ENUMS(XAccelerationProfile)
 public:
+    enum XAccelerationProfile
+    {
+        NoAcceleration = -1,
+        ClassicAcceleration = 0,
+        DeviceDependentAcceleration = 1,
+        PolynomialAcceleration = 2,
+        SmoothLinearAcceleration = 3,
+        SimpleAcceleration = 4,
+        PowerAcceleration = 5,
+        LinearAcceleration = 6,
+        LimitedAcceleration = 7
+    };
+
     explicit InputDevice(QObject *parent);
     ~InputDevice() Q_DECL_OVERRIDE;
 

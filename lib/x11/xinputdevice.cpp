@@ -72,7 +72,9 @@ QVariant XInputDevice::unpackPropertyItem(const xcb_input_xi_get_property_reply_
         return (name.isEmpty()) ? QVariant() : name;
         }
     }
-    if (reply->type == atomCache_->intern(QByteArrayLiteral("FLOAT"))) {
+
+    static const auto FLOAT = QByteArrayLiteral("FLOAT");
+    if (reply->type == atomCache_->intern(FLOAT)) {
         return QVariant(*reinterpret_cast<const float *>(data));
     }
     qCCritical(POINTINGDEVICES) << "Unknown property type" << atomCache_->getName(reply->type);
@@ -107,7 +109,9 @@ bool XInputDevice::packPropertyItem(T *data, const QVariant &value, xcb_atom_t t
         return true;
     }
     }
-    if (type == atomCache_->intern(QByteArrayLiteral("FLOAT"))) {
+
+    static const auto FLOAT = QByteArrayLiteral("FLOAT");
+    if (type == atomCache_->intern(FLOAT)) {
         *reinterpret_cast<float *>(data) = value.toFloat();
         return true;
     }
