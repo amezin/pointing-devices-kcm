@@ -21,7 +21,7 @@ public Q_SLOTS:
     void reloadConfig(const QString &device);
 
 private:
-    void applyConfig(InputDevice *, bool overwriteDefaults = false);
+    void applyConfig(InputDevice *);
     void reapplyConfig();
 
     InputDeviceManager *deviceManager_;

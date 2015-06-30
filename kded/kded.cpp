@@ -29,7 +29,7 @@ PointingDevicesKDED::PointingDevicesKDED(QObject *parent, const QVariantList &)
         QPointer<InputDevice> devPtr(dev);
         QTimer::singleShot(1000, this, [this, devPtr]() {
             if (devPtr) { // the device can possibly be deleted at this point
-                applyConfig(devPtr, true);
+                applyConfig(devPtr);
             }
         });
     });
@@ -45,7 +45,7 @@ PointingDevicesKDED::~PointingDevicesKDED()
 {
 }
 
-void PointingDevicesKDED::applyConfig(InputDevice *device, bool overwriteDefaults)
+void PointingDevicesKDED::applyConfig(InputDevice *device)
 {
     Q_ASSERT(device);
 
@@ -65,21 +65,13 @@ void PointingDevicesKDED::applyConfig(InputDevice *device, bool overwriteDefault
         }
 
         auto currentValue = prop.read(device);
-        if (!defaultsGroup.hasKey(prop.name()) || overwriteDefaults) {
+        if (!defaultsGroup.hasKey(prop.name())) {
             defaultsGroup.writeEntry(prop.name(), currentValue);
         }
 
         auto defaultValue = defaultsGroup.readEntry(prop.name(), currentValue);
         auto newValue = group.readEntry(prop.name(), defaultValue);
         prop.write(device, newValue);
-    }
-
-    if (overwriteDefaults) {
-        Q_FOREACH (const auto &key, defaultsGroup.keyList()) {
-            if (!supported.contains(key.toLatin1())) {
-                defaultsGroup.deleteEntry(key);
-            }
-        }
     }
 
     defaultsGroup.sync();
@@ -89,7 +81,7 @@ void PointingDevicesKDED::reapplyConfig()
 {
     auto device = qobject_cast<InputDevice *>(sender());
     Q_ASSERT(device);
-    applyConfig(device, false);
+    applyConfig(device);
 }
 
 void PointingDevicesKDED::reloadConfig()
