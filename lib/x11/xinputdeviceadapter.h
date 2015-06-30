@@ -20,7 +20,7 @@ public:
     XInputDeviceAdapter(XInputDevice *impl, QObject *parent);
     ~XInputDeviceAdapter() Q_DECL_OVERRIDE;
 
-    QByteArrayList supportedProperties() const Q_DECL_OVERRIDE;
+    QStringList supportedProperties() const Q_DECL_OVERRIDE;
 
     QString name() const Q_DECL_OVERRIDE;
     QString identifier() const Q_DECL_OVERRIDE;

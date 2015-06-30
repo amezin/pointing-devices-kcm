@@ -35,7 +35,7 @@ XInputDeviceAdapter::~XInputDeviceAdapter()
 {
 }
 
-QByteArrayList XInputDeviceAdapter::supportedProperties() const
+QStringList XInputDeviceAdapter::supportedProperties() const
 {
     auto interfaceProperties = InputDevice::supportedProperties();
 

@@ -12,11 +12,11 @@ InputDevice::~InputDevice()
 {
 }
 
-QByteArrayList InputDevice::supportedProperties() const
+QStringList InputDevice::supportedProperties() const
 {
-    QByteArrayList interfaceProperties;
+    QStringList interfaceProperties;
     for (int i = staticMetaObject.propertyOffset(); i < staticMetaObject.propertyCount(); i++) {
-        interfaceProperties.append(staticMetaObject.property(i).name());
+        interfaceProperties.append(QLatin1String(staticMetaObject.property(i).name()));
     }
     return interfaceProperties;
 }
