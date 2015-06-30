@@ -2,6 +2,7 @@
 
 #include <QMetaObject>
 #include <QMetaProperty>
+#include <QTimer>
 
 #include <KConfig>
 #include <KConfigGroup>
@@ -19,8 +20,18 @@ PointingDevicesKDED::PointingDevicesKDED(QObject *parent, const QVariantList &)
       config_(QStringLiteral("pointingdevicesrc")),
       defaults_(QStringLiteral("pointingdevicesdefaultsrc"))
 {
-    connect(deviceManager_, &InputDeviceManager::deviceAdded, [this](InputDevice *dev) {
-        applyConfig(dev, true);
+    connect(deviceManager_, &InputDeviceManager::deviceAdded, this, [this](InputDevice *dev) {
+        /*
+         * When XInput devices are plugged in, they are disabled at first.
+         * After short amount of time X enables them.
+         * Wait for 1 sec to prevent "enabled=false" from being saved for all devices as default.
+         */
+        QPointer<InputDevice> devPtr(dev);
+        QTimer::singleShot(1000, this, [this, devPtr]() {
+            if (devPtr) { // the device can possibly be deleted at this point
+                applyConfig(devPtr, true);
+            }
+        });
     });
 
     Q_FOREACH (auto device, deviceManager_->devices()) {
