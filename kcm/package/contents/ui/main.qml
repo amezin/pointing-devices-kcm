@@ -1,10 +1,8 @@
 import QtQuick 2.4
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.3
-import org.kde.plasma.core 2.0
 
 ColumnLayout {
-
     ListModel {
         id: deviceList
 
@@ -49,9 +47,34 @@ ColumnLayout {
         }
     }
 
-    ComboBox {
-        model: deviceList
-        textRole: "name"
-        Layout.fillWidth: true
+    RowLayout {
+        Label {
+            text: i18n("Device:")
+        }
+
+        ComboBox {
+            id: deviceCombo
+            model: deviceList
+            textRole: "name"
+            Layout.fillWidth: true
+        }
+    }
+
+    property var currentDevice: (deviceCombo.currentIndex >= 0 &&
+                                 deviceCombo.currentIndex < deviceList.count)
+                                ? deviceList.get(deviceCombo.currentIndex).device
+                                : null
+
+    CheckBox {
+        text: i18n("Enable Device")
+        checked: currentDevice.enabled
+    }
+
+    Loader {
+        active: currentDevice.supportedProperties.indexOf("accelProfile") >= 0 ||
+                currentDevice.supportedProperties.indexOf("accelConstantDeceleration") >= 0 ||
+                currentDevice.supportedProperties.indexOf("accelAdaptiveDeceleration") >= 0 ||
+                currentDevice.supportedProperties.indexOf("accelVelocityScaling") >= 0
+        sourceComponent: XInputAcceleration { }
     }
 }

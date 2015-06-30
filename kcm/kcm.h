@@ -1,5 +1,6 @@
 #pragma once
 
+#include <KConfig>
 #include <KQuickAddons/ConfigModule>
 
 class InputDeviceManager;
@@ -19,8 +20,7 @@ Q_SIGNALS:
     void deviceRemoved(InputDevice *device);
 
 private:
-    void setCppOwnership(QObject *);
-
     InputDeviceManager *deviceManager_;
+    KConfig config_, defaults_;
 };
 

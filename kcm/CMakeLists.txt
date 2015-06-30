@@ -3,6 +3,7 @@ target_link_libraries(kcm_pointingdevices
                       Qt5::Quick
                       KF5::CoreAddons
                       KF5::QuickAddons
+                      KF5::ConfigCore
                       KF5::I18n
                       pointingdevices)
 
