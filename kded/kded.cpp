@@ -20,18 +20,8 @@ PointingDevicesKDED::PointingDevicesKDED(QObject *parent, const QVariantList &)
       config_(QStringLiteral("pointingdevicesrc")),
       defaults_(QStringLiteral("pointingdevicesdefaultsrc"))
 {
-    connect(deviceManager_, &InputDeviceManager::deviceAdded, this, [this](InputDevice *dev) {
-        /*
-         * When XInput devices are plugged in, they are disabled at first.
-         * After short amount of time X enables them.
-         * Wait for 1 sec to prevent "enabled=false" from being saved for all devices as default.
-         */
-        QPointer<InputDevice> devPtr(dev);
-        QTimer::singleShot(1000, this, [this, devPtr]() {
-            if (devPtr) { // the device can possibly be deleted at this point
-                applyConfig(devPtr);
-            }
-        });
+    connect(deviceManager_, &InputDeviceManager::deviceAdded, this, [this](InputDevice *device) {
+        applyConfig(device);
     });
 
     Q_FOREACH (auto device, deviceManager_->devices()) {
@@ -65,7 +55,7 @@ void PointingDevicesKDED::applyConfig(InputDevice *device)
         }
 
         auto currentValue = prop.read(device);
-        if (!defaultsGroup.hasKey(prop.name())) {
+        if (prop.name() != QLatin1String("enabled") && !defaultsGroup.hasKey(prop.name())) {
             defaultsGroup.writeEntry(prop.name(), currentValue);
         }
 
