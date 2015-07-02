@@ -8,8 +8,7 @@ class DeviceManagerTest : public QObject
 private Q_SLOTS:
     void initTestCase()
     {
-        auto app = QCoreApplication::instance();
-        app->addLibraryPath(PLUGIN_DIR);
+        QCoreApplication::addLibraryPath(PLUGIN_DIR);
     }
 
     void testPluginLoad()

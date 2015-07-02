@@ -8,7 +8,7 @@ class KdedTest : public QObject
 private Q_SLOTS:
     void initTestCase()
     {
-        QCoreApplication::instance()->addLibraryPath(PLUGIN_DIR);
+        QCoreApplication::addLibraryPath(PLUGIN_DIR);
     }
 
     void testLoadUnload() // To be run under Valgrind to detect memory errors
