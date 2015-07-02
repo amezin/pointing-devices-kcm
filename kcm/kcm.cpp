@@ -12,7 +12,7 @@ K_PLUGIN_FACTORY_WITH_JSON(PointingDevicesKCMFactory, "kcm_pointingdevices.json"
 
 PointingDevicesKCM::PointingDevicesKCM(QObject *parent, const QVariantList &args)
     : KQuickAddons::ConfigModule(parent, args),
-      deviceManager_(InputDeviceManager::instance()),
+      deviceManager_(InputDeviceManager::create(this)),
       config_(QStringLiteral("pointingdevicesrc")),
       defaults_(QStringLiteral("pointingdevicesdefaultsrc"))
 {

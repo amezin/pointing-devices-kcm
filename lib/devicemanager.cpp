@@ -26,17 +26,11 @@ InputDevice *InputDeviceManager::deviceByIdentifier(const QString &id) const
     return Q_NULLPTR;
 }
 
-InputDeviceManager *InputDeviceManager::create()
+InputDeviceManager *InputDeviceManager::create(QObject *parent)
 {
     KPluginLoader loader(QStringLiteral("pointingdevices_x11"));
     if (!loader.factory()) {
         qCCritical(POINTINGDEVICES) << "Can't load plugin" << loader.fileName() << ":" << loader.errorString();
     }
-    return loader.factory()->create<InputDeviceManager>();
-}
-
-InputDeviceManager *InputDeviceManager::instance()
-{
-    static QScopedPointer<InputDeviceManager> instance_(create());
-    return instance_.data();
+    return loader.factory()->create<InputDeviceManager>(parent);
 }

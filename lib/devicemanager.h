@@ -17,12 +17,9 @@ public:
 
     InputDevice *deviceByIdentifier(const QString &) const;
 
-    static InputDeviceManager *instance();
+    static InputDeviceManager *create(QObject *parent = Q_NULLPTR);
 
 Q_SIGNALS:
     void deviceAdded(InputDevice *device);
     void deviceRemoved(InputDevice *device);
-
-private:
-    static InputDeviceManager *create();
 };

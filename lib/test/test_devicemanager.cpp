@@ -14,7 +14,8 @@ private Q_SLOTS:
 
     void testPluginLoad()
     {
-        QVERIFY(InputDeviceManager::instance());
+        QScopedPointer<InputDeviceManager> manager(InputDeviceManager::create());
+        QVERIFY(manager);
     }
 };
 

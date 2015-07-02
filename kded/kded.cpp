@@ -16,7 +16,7 @@ K_PLUGIN_FACTORY(PointingDevicesKDEDFactory, registerPlugin<PointingDevicesKDED>
 
 PointingDevicesKDED::PointingDevicesKDED(QObject *parent, const QVariantList &)
     : KDEDModule(parent),
-      deviceManager_(InputDeviceManager::instance()),
+      deviceManager_(InputDeviceManager::create(this)),
       config_(QStringLiteral("pointingdevicesrc")),
       defaults_(QStringLiteral("pointingdevicesdefaultsrc"))
 {
