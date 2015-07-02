@@ -2,13 +2,16 @@
 
 #include <KConfig>
 #include <KDEDModule>
+#include <KPluginFactory>
+
+#include "kded_pointingdevices_export.h"
 
 class KConfig;
 
 class InputDevice;
 class InputDeviceManager;
 
-class PointingDevicesKDED : public KDEDModule
+class KDED_POINTINGDEVICES_EXPORT PointingDevicesKDED : public KDEDModule
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.kde.PointingDevices")
@@ -27,3 +30,5 @@ private:
     InputDeviceManager *deviceManager_;
     KConfig config_, defaults_;
 };
+
+K_PLUGIN_FACTORY_DECLARATION(PointingDevicesKDEDFactory)

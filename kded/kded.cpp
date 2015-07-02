@@ -6,13 +6,12 @@
 
 #include <KConfig>
 #include <KConfigGroup>
-#include <KPluginFactory>
 
 #include "devicemanager.h"
 #include "device.h"
 #include "kdedadaptor.h"
 
-K_PLUGIN_FACTORY(PointingDevicesKDEDFactory, registerPlugin<PointingDevicesKDED>();)
+K_PLUGIN_FACTORY_DEFINITION(PointingDevicesKDEDFactory, registerPlugin<PointingDevicesKDED>();)
 
 PointingDevicesKDED::PointingDevicesKDED(QObject *parent, const QVariantList &)
     : KDEDModule(parent),
@@ -88,5 +87,3 @@ void PointingDevicesKDED::reloadConfig(const QString &identifier)
     auto device = deviceManager_->deviceByIdentifier(identifier);
     applyConfig(device);
 }
-
-#include "kded.moc"
