@@ -100,23 +100,6 @@ private Q_SLOTS:
         QCOMPARE(dev->deviceProperty(propertyName).toList(), newMatrix);
     }
 
-    void testDisable()
-    {
-        Xvfb Xvfb(":1234");
-        QCOMPARE(Xvfb.state(), QProcess::Running);
-
-        XInputDeviceManager manager(Xvfb.display());
-        auto dev = manager.device("Xvfb mouse");
-        QVERIFY(dev);
-
-        QVERIFY(dev->setDeviceProperty("Device Enabled", false));
-
-        QSignalSpy spy(dev, SIGNAL(enabledChanged()));
-        QVERIFY(spy.wait());
-        QCOMPARE(spy.count(), 1);
-        QCOMPARE(dev->enabled(), false);
-    }
-
     void testDetach()
     {
         Xvfb Xvfb(":1234");

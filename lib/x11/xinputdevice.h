@@ -36,11 +36,6 @@ public:
         return name_;
     }
 
-    bool enabled() const
-    {
-        return enabled_;
-    }
-
     XcbAtomCache *atomCache() const
     {
         return atomCache_;
@@ -65,7 +60,6 @@ Q_SIGNALS:
     void devicePropertyAdded(const QByteArray &);
     void devicePropertyRemoved(const QByteArray &);
     void devicePropertyChanged(const QByteArray &);
-    void enabledChanged();
     void typeChanged();
 
 private:
@@ -86,7 +80,6 @@ private:
 
     xcb_input_device_id_t id_;
     xcb_input_device_type_t type_;
-    bool enabled_;
     QByteArray name_;
 
     struct PropertyInfo

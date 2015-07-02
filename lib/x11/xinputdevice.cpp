@@ -11,7 +11,6 @@ XInputDevice::XInputDevice(const xcb_input_xi_device_info_t *info, XcbAtomCache 
       atomCache_(atomCache),
       id_(info->deviceid),
       type_(xcb_input_device_type_t(info->type)),
-      enabled_(info->enabled),
       name_(xcb_input_xi_device_info_name(info), info->name_len)
 {
     auto cookie = xcb_input_xi_list_properties_unchecked(connection(), id_);
@@ -331,10 +330,5 @@ void XInputDevice::processEvent(const xcb_input_hierarchy_info_t *e)
     if (type_ != e->type) {
         type_ = xcb_input_device_type_t(e->type);
         Q_EMIT typeChanged();
-    }
-
-    if (enabled_ != e->enabled) {
-        enabled_ = e->enabled;
-        Q_EMIT enabledChanged();
     }
 }

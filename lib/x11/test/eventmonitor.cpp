@@ -8,9 +8,6 @@ static void addDevice(XInputDevice *dev)
 {
     qDebug() << "Device added:" << dev->name();
 
-    QObject::connect(dev, &XInputDevice::enabledChanged, [dev]() {
-        qDebug() << "Device" << dev->name() << "enabled:" << dev->enabled();
-    });
     QObject::connect(dev, &XInputDevice::typeChanged, [dev]() {
         qDebug() << "Device" << dev->name() << "type:" << dev->type();
     });

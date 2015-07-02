@@ -11,10 +11,11 @@ XInputDeviceAdapter::XInputDeviceAdapter(XInputDevice *impl, QObject *parent)
     connect(impl, &XInputDevice::devicePropertyAdded, this, &XInputDeviceAdapter::handlePropertyAdd);
     connect(impl, &XInputDevice::devicePropertyRemoved, this, &XInputDeviceAdapter::handlePropertyRemove);
     connect(impl, &XInputDevice::devicePropertyChanged, this, &XInputDeviceAdapter::handlePropertyChange);
-    connect(impl, &XInputDevice::enabledChanged, this, &XInputDeviceAdapter::enabledChanged);
 
 #define MAP_PROPERTY(name, xiName) \
     requiredDevProperties_[QByteArrayLiteral(name)].append(QByteArrayLiteral(xiName))
+
+    MAP_PROPERTY("enabled", "Device Enabled");
 
     MAP_PROPERTY("accelProfile", "Device Accel Profile");
     MAP_PROPERTY("accelConstantDeceleration", "Device Accel Constant Deceleration");
@@ -73,17 +74,6 @@ QString XInputDeviceAdapter::identifier() const
     return id.join(':');
 }
 
-bool XInputDeviceAdapter::isEnabled() const
-{
-    return impl->enabled();
-}
-
-void XInputDeviceAdapter::setEnabled(bool enable)
-{
-    static const auto name = QByteArrayLiteral("Device Enabled");
-    impl->setDeviceProperty(name, enable);
-}
-
 void XInputDeviceAdapter::handlePropertyAdd(const QByteArray &name)
 {
     handlePropertyChange(name);
@@ -109,24 +99,32 @@ void XInputDeviceAdapter::handlePropertyChange(const QByteArray &name)
     }
 }
 
-#define SIMPLE_GET_SET2(type, realType, getter, setter) \
+#define SIMPLE_GET_SET_TP(type, realType, prop, getter, setter) \
     type XInputDeviceAdapter::getter() const \
     { \
-        static const auto name = QByteArrayLiteral(#getter); \
+        static const auto name = QByteArrayLiteral(prop); \
         auto xiProp = requiredDevProperties_.value(name).first(); \
         return static_cast<type>(impl->deviceProperty(xiProp).value<realType>()); \
     } \
     void XInputDeviceAdapter::setter(type v) \
     { \
-        static const auto name = QByteArrayLiteral(#getter); \
+        static const auto name = QByteArrayLiteral(prop); \
         auto xiProp = requiredDevProperties_.value(name).first(); \
         impl->setDeviceProperty(xiProp, static_cast<realType>(v)); \
     }
 
-#define SIMPLE_GET_SET(type, getter, setter) \
-    SIMPLE_GET_SET2(type, type, getter, setter)
+#define SIMPLE_GET_SET_T(type, realType, getter, setter) \
+    SIMPLE_GET_SET_TP(type, realType, #getter, getter, setter)
 
-SIMPLE_GET_SET2(InputDevice::XAccelerationProfile, int, accelProfile, setAccelProfile)
+#define SIMPLE_GET_SET_P(type, prop, getter, setter) \
+    SIMPLE_GET_SET_TP(type, type, prop, getter, setter)
+
+#define SIMPLE_GET_SET(type, getter, setter) \
+    SIMPLE_GET_SET_TP(type, type, #getter, getter, setter)
+
+SIMPLE_GET_SET_P(bool, "enabled", isEnabled, setEnabled)
+
+SIMPLE_GET_SET_T(InputDevice::XAccelerationProfile, int, accelProfile, setAccelProfile)
 SIMPLE_GET_SET(float, accelConstantDeceleration, setAccelConstantDeceleration)
 SIMPLE_GET_SET(float, accelAdaptiveDeceleration, setAccelAdaptiveDeceleration)
 SIMPLE_GET_SET(float, accelVelocityScaling, setAccelVelocityScaling)
