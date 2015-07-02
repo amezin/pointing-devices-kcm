@@ -60,7 +60,10 @@ void PointingDevicesKDED::applyConfig(InputDevice *device)
 
         auto defaultValue = defaultsGroup.readEntry(prop.name(), currentValue);
         auto newValue = group.readEntry(prop.name(), defaultValue);
-        prop.write(device, newValue);
+
+        if (newValue != currentValue) {
+            prop.write(device, newValue);
+        }
     }
 
     defaultsGroup.sync();
