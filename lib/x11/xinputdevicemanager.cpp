@@ -1,5 +1,6 @@
 #include "xinputdevicemanager.h"
 
+#include <QAbstractEventDispatcher>
 #include <QScopedPointer>
 #include <QSocketNotifier>
 
@@ -16,7 +17,16 @@ XInputDeviceManager::XInputDeviceManager(const char *display, QObject *parent)
       notifier_(new QSocketNotifier(xcb_get_file_descriptor(connection()), QSocketNotifier::Read, this)),
       xinput_(xcb_get_extension_data(connection(), &xcb_input_id))
 {
-    connect(notifier_, SIGNAL(activated(int)), SLOT(processEvents()));
+    connect(notifier_, SIGNAL(activated(int)), this, SLOT(processEvents()));
+
+    /*
+     * IMPORTANT: xcb_poll_for_event() usually leaves the fd in 'ready read' state,
+     * because of replies that aren't processed yet. So we must check for new events
+     * every time the event loop blocks. It seems to work, but, to be honest, I am
+     * not sure it behaves correctly in every possible case.
+     */
+    connect(QAbstractEventDispatcher::instance(), &QAbstractEventDispatcher::aboutToBlock,
+            this, &XInputDeviceManager::processEvents);
 
     struct {
         xcb_input_event_mask_t head;
