@@ -1,4 +1,12 @@
-add_library(kcm_pointingdevices MODULE kcm.h kcm.cpp)
+add_library(kcm_pointingdevices MODULE
+            kcm.h
+            kcm.cpp
+            devicesettings.h
+            devicesettings.cpp
+            devicelistmodel.h
+            devicelistmodel.cpp
+            devicepropertybinding.h
+            devicepropertybinding.cpp)
 target_link_libraries(kcm_pointingdevices
                       Qt5::Quick
                       KF5::CoreAddons
