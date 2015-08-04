@@ -49,7 +49,7 @@ void PointingDevicesKDED::applyConfig(InputDevice *device)
 
     for (auto i = InputDevice::staticMetaObject.propertyOffset(); i < metaObject->propertyCount(); i++) {
         auto prop = metaObject->property(i);
-        if (!prop.isReadable() || !prop.isWritable() || !supported.contains(prop.name())) {
+        if (!supported.contains(prop.name())) {
             continue;
         }
 
