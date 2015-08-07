@@ -6,8 +6,6 @@
 
 #include "kded_pointingdevices_export.h"
 
-class KConfig;
-
 class InputDevice;
 class InputDeviceManager;
 
@@ -25,10 +23,10 @@ public Q_SLOTS:
 
 private:
     void applyConfig(InputDevice *);
-    void reapplyConfig();
+    void applyProperty(InputDevice *, const QString &prop, KConfigGroup &group,
+                       KConfigGroup &defaultsGroup);
+    void reapplyConfig(const QString &prop);
 
     InputDeviceManager *deviceManager_;
     KConfig config_, defaults_;
 };
-
-K_PLUGIN_FACTORY_DECLARATION(PointingDevicesKDEDFactory)

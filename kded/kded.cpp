@@ -11,7 +11,7 @@
 #include "device.h"
 #include "kdedadaptor.h"
 
-K_PLUGIN_FACTORY_DEFINITION(PointingDevicesKDEDFactory, registerPlugin<PointingDevicesKDED>();)
+K_PLUGIN_FACTORY_WITH_JSON(PointingDevicesKDEDFactory, "kded_pointingdevices.json", registerPlugin<PointingDevicesKDED>();)
 
 PointingDevicesKDED::PointingDevicesKDED(QObject *parent, const QVariantList &)
     : KDEDModule(parent),
@@ -19,9 +19,12 @@ PointingDevicesKDED::PointingDevicesKDED(QObject *parent, const QVariantList &)
       config_(QStringLiteral("pointingdevicesrc")),
       defaults_(QStringLiteral("pointingdevicesdefaultsrc"))
 {
-    connect(deviceManager_, &InputDeviceManager::deviceAdded, this, [this](InputDevice *device) {
-        applyConfig(device);
-    });
+    connect(deviceManager_, &InputDeviceManager::deviceAdded,
+            this, [this](InputDevice *device)
+            {
+                config_.reparseConfiguration();
+                PointingDevicesKDED::applyConfig(device);
+            });
 
     Q_FOREACH (auto device, deviceManager_->devices()) {
         applyConfig(device);
@@ -38,42 +41,50 @@ void PointingDevicesKDED::applyConfig(InputDevice *device)
 {
     Q_ASSERT(device);
 
-    connect(device, &InputDevice::supportedPropertiesChanged,
+    connect(device, &InputDevice::propertyAdded,
             this, &PointingDevicesKDED::reapplyConfig, Qt::UniqueConnection);
 
+    config_.reparseConfiguration();
     auto group = config_.group(device->identifier());
     auto defaultsGroup = defaults_.group(device->identifier());
 
-    auto metaObject = device->metaObject();
-    auto supported = device->supportedProperties();
-
-    for (auto i = InputDevice::staticMetaObject.propertyOffset(); i < metaObject->propertyCount(); i++) {
-        auto prop = metaObject->property(i);
-        if (!supported.contains(prop.name())) {
-            continue;
-        }
-
-        auto currentValue = prop.read(device);
-        if (prop.name() != QLatin1String("enabled") && !defaultsGroup.hasKey(prop.name())) {
-            defaultsGroup.writeEntry(prop.name(), currentValue);
-        }
-
-        auto defaultValue = defaultsGroup.readEntry(prop.name(), currentValue);
-        auto newValue = group.readEntry(prop.name(), defaultValue);
-
-        if (newValue != currentValue) {
-            prop.write(device, newValue);
-        }
+    Q_FOREACH (const auto &prop, device->supportedProperties()) {
+        applyProperty(device, prop, group, defaultsGroup);
     }
 
     defaultsGroup.sync();
 }
 
-void PointingDevicesKDED::reapplyConfig()
+void PointingDevicesKDED::applyProperty(InputDevice *device, const QString &prop,
+                                        KConfigGroup &group, KConfigGroup &defaultsGroup)
+{
+    if (!device->isPropertyWritable(prop)) {
+        return;
+    }
+
+    auto currentValue = device->deviceProperty(prop);
+    if (!defaultsGroup.hasKey(prop)) {
+        defaultsGroup.writeEntry(prop, currentValue);
+    }
+
+    auto defaultValue = defaultsGroup.readEntry(prop, currentValue);
+    auto newValue = group.readEntry(prop, defaultValue);
+
+    if (newValue != currentValue) {
+        device->setDeviceProperty(prop, newValue);
+    }
+}
+
+void PointingDevicesKDED::reapplyConfig(const QString &prop)
 {
     auto device = qobject_cast<InputDevice *>(sender());
     Q_ASSERT(device);
-    applyConfig(device);
+
+    config_.reparseConfiguration();
+    auto group = config_.group(device->identifier());
+    auto defaultsGroup = defaults_.group(device->identifier());
+    applyProperty(device, prop, group, defaultsGroup);
+    defaultsGroup.sync();
 }
 
 void PointingDevicesKDED::reloadConfig()
@@ -90,3 +101,5 @@ void PointingDevicesKDED::reloadConfig(const QString &identifier)
     auto device = deviceManager_->deviceByIdentifier(identifier);
     applyConfig(device);
 }
+
+#include "kded.moc"
