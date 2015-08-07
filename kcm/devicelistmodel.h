@@ -31,7 +31,5 @@ public:
     Q_INVOKABLE QObject *get(int index) const;
 
 private:
-    void deviceNameChanged();
-
     QList<DeviceSettings *> items_;
 };

@@ -2,8 +2,9 @@ import QtQuick 2.4
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.3
 
-ColumnLayout {
+import org.kde.PointingDevicesKCM 1.0
 
+ColumnLayout {
     RowLayout {
         Label {
             text: i18n("Device:")
@@ -21,7 +22,8 @@ ColumnLayout {
 
     Loader {
         Layout.fillWidth: true
+        Layout.fillHeight: true
         active: currentDevice
-        sourceComponent: DeviceSettings { device: currentDevice }
+        sourceComponent: DeviceSettingsUI { }
     }
 }

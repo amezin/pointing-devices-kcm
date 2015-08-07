@@ -1,24 +1,11 @@
 #include "devicesettings.h"
 
-#include <QMetaObject>
-#include <QMetaProperty>
 #include <KConfig>
 
 #include "log.h"
 
-namespace {
-
-QStringList subtract(const QStringList &from, const QStringList &what)
+namespace
 {
-    QStringList result;
-    result.reserve(from.size());
-    Q_FOREACH (const QString &s, from) {
-        if (!what.contains(s)) {
-            result.append(s);
-        }
-    }
-    return result;
-}
 
 template<typename T>
 bool fuzzySettingsCompare(T a, T b)
@@ -58,7 +45,7 @@ DeviceSettings::DeviceSettings(KConfig *config,
                                KConfig *defaults,
                                InputDevice *device,
                                QObject *parent)
-    : QQmlPropertyMap(this, parent),
+    : QObject(parent),
       device_(device),
       configGroup_(device ? config->group(device->identifier()) : KConfigGroup()),
       defaultsGroup_(device ? defaults->group(device->identifier()) : KConfigGroup())
@@ -67,38 +54,102 @@ DeviceSettings::DeviceSettings(KConfig *config,
         return;
     }
 
-    connect(device, &QObject::destroyed, this, [this](QObject *) {
-        Q_EMIT deviceDestroyed();
-    });
+    connect(device, &InputDevice::propertyAdded,
+            this, &DeviceSettings::addProperty);
+    connect(device, &InputDevice::propertyRemoved,
+            this, &DeviceSettings::removeProperty);
+    connect(device, &InputDevice::propertyChanged,
+            this, &DeviceSettings::updateProperty);
 
-    connect(device, &InputDevice::supportedPropertiesChanged,
-            this, &DeviceSettings::updatePropertySet);
-    connect(device, &InputDevice::supportedPropertiesChanged,
-            this, &DeviceSettings::supportedPropertiesChanged);
-    connect(this, &QQmlPropertyMap::valueChanged,
-            this, &DeviceSettings::handlePropertyChange);
+    Q_FOREACH (const QString &prop, device->supportedProperties()) {
+        addProperty(prop);
+    }
 
-    updatePropertySet();
+    connect(this, &DeviceSettings::changed,
+            this, &DeviceSettings::updateStatus);
+    updateStatus();
 }
 
 DeviceSettings::~DeviceSettings()
 {
 }
 
-QStringList DeviceSettings::supportedProperties() const
+InputDevice *DeviceSettings::device() const
 {
-    if (!device_) {
-        return QStringList();
-    }
-    return device_->supportedProperties();
+    return device_;
 }
 
-QVariant DeviceSettings::activeValue(const QString &name) const
+bool DeviceSettings::isPropertySupported(const QString &prop) const
 {
-    if (!device_) {
-        return QVariant();
+    return readonly_.contains(prop);
+}
+
+bool DeviceSettings::isPropertyWritable(const QString &prop) const
+{
+    return values_.contains(prop);
+}
+
+bool DeviceSettings::needsSave() const
+{
+    return needsSave_;
+}
+
+void DeviceSettings::setNeedsSave(bool needs)
+{
+    if (needsSave_ != needs) {
+        needsSave_ = needs;
+        Q_EMIT needsSaveChanged();
     }
-    return device_->property(qPrintable(name));
+}
+
+QVariant DeviceSettings::value(const QString &prop) const
+{
+    return values_.value(prop, readonly_.value(prop, QVariant()));
+}
+
+void DeviceSettings::setValue(const QString &prop, const QVariant &value)
+{
+    if (setValueNoSignal(prop, value)) {
+        Q_EMIT changed();
+        updateStatus();
+    }
+}
+
+bool DeviceSettings::setValueNoSignal(const QString &prop, const QVariant &value)
+{
+    if (!values_.contains(prop)) {
+        return false;
+    }
+    auto fixed = fixupType(value, deviceValue(prop));
+    if (values_.value(prop) == fixed) {
+        return false;
+    }
+    values_.insert(prop, fixed);
+    return true;
+}
+
+void DeviceSettings::addProperty(const QString &name)
+{
+    readonly_.insert(name, device_->deviceProperty(name));
+    if (device_ && device_->isPropertyWritable(name)) {
+        values_.insert(name, fixupType(savedValue(name), deviceValue(name)));
+    }
+    Q_EMIT changed();
+}
+
+void DeviceSettings::removeProperty(const QString &name)
+{
+    if (values_.remove(name) || readonly_.remove(name)) {
+        Q_EMIT changed();
+    }
+}
+
+void DeviceSettings::updateProperty(const QString &name)
+{
+    if (device_ && !device_->isPropertyWritable(name)) {
+        values_.remove(name);
+    }
+    addProperty(name);
 }
 
 QVariant DeviceSettings::savedValue(const QString &name) const
@@ -108,200 +159,101 @@ QVariant DeviceSettings::savedValue(const QString &name) const
 
 QVariant DeviceSettings::defaultValue(const QString &name) const
 {
-    return defaultsGroup_.readEntry(name, activeValue(name));
+     return defaultsGroup_.readEntry(name, deviceValue(name));
 }
 
-void DeviceSettings::load(DeviceSettings::Getter getter, const QStringList &keys, bool overwrite)
+QVariant DeviceSettings::deviceValue(const QString &name) const
 {
-    QStringList loadedKeys;
-    Q_FOREACH(const QString &key, keys) {
-        if (!overwrite && contains(key)) {
-            continue;
-        }
-        insert(key, (this->*getter)(key));
-        loadedKeys.append(key);
-    }
-    updateDiffs(loadedKeys);
+    return readonly_.value(name, QVariant());
 }
 
-void DeviceSettings::load(Getter getter, bool overwrite)
+QVariant DeviceSettings::fixupType(const QVariant &value, const QVariant &pattern) const
 {
-    load(getter, supportedProperties(), overwrite);
-}
-
-QStringList DeviceSettings::differsFrom(Getter getter, const QStringList &keys) const
-{
-    QStringList diff;
-    Q_FOREACH(const QString &key, keys) {
-        if (!compareSettings((this->*getter)(key), value(key))) {
-            diff.append(key);
-        }
-    }
-    return diff;
-}
-
-InputDevice *DeviceSettings::device() const
-{
-    return device_.data();
-}
-
-bool DeviceSettings::needsSave() const
-{
-    return !needsSave_.isEmpty();
-}
-
-bool DeviceSettings::differsFromDefaults() const
-{
-    return !differsFromDefaults_.isEmpty();
-}
-
-bool DeviceSettings::differsFromActive() const
-{
-    return !differsFromActive_.isEmpty();
-}
-
-void DeviceSettings::setNeedsSave(const QStringList &value)
-{
-    bool prev = needsSave_.isEmpty();
-    needsSave_ = value;
-    if (prev != needsSave_.isEmpty()) {
-        Q_EMIT needsSaveChanged();
-    }
-}
-
-void DeviceSettings::setDiffersFromActive(const QStringList &value)
-{
-    bool prev = differsFromActive_.isEmpty();
-    differsFromActive_ = value;
-    if (prev != differsFromActive_.isEmpty()) {
-        Q_EMIT differsFromActiveChanged();
-    }
-}
-
-void DeviceSettings::setDiffersFromDefaults(const QStringList &value)
-{
-    bool prev = differsFromDefaults_.isEmpty();
-    differsFromDefaults_ = value;
-    if (prev != differsFromDefaults_.isEmpty()) {
-        Q_EMIT differsFromDefaultsChanged();
-    }
-}
-
-void DeviceSettings::updatePropertySet()
-{
-    load(&DeviceSettings::savedValue, false);
-    clearUnsupportedProperties();
-}
-
-void DeviceSettings::clearUnsupportedProperties()
-{
-    auto supported = supportedProperties();
-    Q_FOREACH (const auto &key, keys()) {
-        if (!supported.contains(key)) {
-            clear(key);
-        }
-    }
-}
-
-void DeviceSettings::updateDiffs(const QStringList &keys, bool discardOld)
-{
-    QStringList save, active, defaults;
-    if (!discardOld) {
-        save = subtract(needsSave_, keys);
-        active = subtract(differsFromActive_, keys);
-        defaults = subtract(differsFromDefaults_, keys);
+    if (!value.isValid()) {
+        return value;
     }
 
-    save.append(differsFrom(&DeviceSettings::savedValue, keys));
-    defaults.append(differsFrom(&DeviceSettings::defaultValue, keys));
+    QVariant converted(value);
+    converted.convert(pattern.userType());
 
-    Q_FOREACH (const QString &key, keys) {
-        if (!compareSettings(savedValue(key), activeValue(key))) {
-            active.append(key);
-        }
+    if (converted.userType() != QMetaType::QVariantList &&
+            converted.userType() != QMetaType::QStringList)
+    {
+        return converted;
     }
 
-    setNeedsSave(save);
-    setDiffersFromActive(active);
-    setDiffersFromDefaults(defaults);
-}
+    QVariantList list(converted.toList());
+    QVariantList listPattern(pattern.toList());
 
-void DeviceSettings::handlePropertyChange(const QString &name, const QVariant &)
-{
-    return updateDiffs(QStringList(name));
-}
+    QVariantList listConverted;
+    listConverted.reserve(listPattern.size());
+    for (int i = 0; i < listPattern.size(); i++) {
+        listConverted.append(fixupType(list.value(i), listPattern.at(i)));
+    }
 
-void DeviceSettings::loadDefaults()
-{
-    load(&DeviceSettings::defaultValue);
+    return listConverted;
 }
 
 void DeviceSettings::loadSaved()
 {
-    load(&DeviceSettings::savedValue);
+    Q_FOREACH (const QString &prop, values_.keys()) {
+        setValueNoSignal(prop, savedValue(prop));
+    }
+    Q_EMIT changed();
+}
+
+void DeviceSettings::loadDefaults()
+{
+    Q_FOREACH (const QString &prop, values_.keys()) {
+        setValueNoSignal(prop, defaultValue(prop));
+    }
+    Q_EMIT changed();
 }
 
 void DeviceSettings::loadActive()
 {
-    load(&DeviceSettings::activeValue);
+    Q_FOREACH (const QString &prop, values_.keys()) {
+        setValueNoSignal(prop, deviceValue(prop));
+    }
+    Q_EMIT changed();
 }
 
-void DeviceSettings::apply(bool updateDiff)
+void DeviceSettings::apply()
 {
-    Q_FOREACH (const QString &key, supportedProperties()) {
-        if (contains(key)) {
-            device_->setProperty(qPrintable(key), value(key));
+    Q_FOREACH (const QString &prop, values_.keys()) {
+        if (!device_->setDeviceProperty(prop, value(prop))) {
+            qWarning(POINTINGDEVICES) << "Failed to set" << prop << "to" << value(prop);
         }
     }
-    if (updateDiff) {
-        updateDiffs(supportedProperties(), true);
-    }
+    updateStatus();
 }
 
-void DeviceSettings::save(bool updateDiff)
+void DeviceSettings::save()
 {
-    auto supported = supportedProperties();
-    Q_FOREACH (const QString &key, supported) {
-        if (value(key) == defaultValue(key)) {
-            configGroup_.revertToDefault(key);
+    Q_FOREACH (const QString &prop, configGroup_.keyList()) {
+        if (!isPropertyWritable(prop)) {
+            configGroup_.deleteEntry(prop);
+        }
+    }
+    Q_FOREACH (const QString &prop, values_.keys()) {
+        auto v = value(prop);
+        if (defaultsGroup_.hasKey(prop) && compareSettings(v, defaultValue(prop))) {
+            configGroup_.revertToDefault(prop);
         } else {
-            configGroup_.writeEntry(key, value(key));
-        }
-    }
-    Q_FOREACH (const QString &key, configGroup_.keyList()) {
-        if (!supported.contains(key)) {
-            configGroup_.deleteEntry(key);
+            configGroup_.writeEntry(prop, v);
         }
     }
     configGroup_.sync();
-
-    if (!updateDiff) {
-        return;
-    }
-
-    updateDiffs(supported, true);
-    if (needsSave()) {
-        Q_FOREACH (const QString &key, needsSave_) {
-            qWarning(POINTINGDEVICES) << "Values not saved:" << key
-                                      << value(key) << savedValue(key);
-        }
-    }
+    updateStatus();
 }
 
-QVariant DeviceSettings::updateValue(const QString &key, const QVariant &input)
+void DeviceSettings::updateStatus()
 {
-    if (!device_) {
-        return input;
+    bool needsSave = false;
+    Q_FOREACH (const QString &prop, values_.keys()) {
+        if (!compareSettings(value(prop), savedValue(prop))) {
+            needsSave = true;
+        }
     }
-    int index = device_->metaObject()->indexOfProperty(qPrintable(key));
-    if (index < 0) {
-        return input;
-    }
-    QMetaProperty prop = device_->metaObject()->property(index);
-    if (input.type() == prop.type()) {
-        return input;
-    }
-    QVariant converted(input);
-    converted.convert(prop.type());
-    return converted;
+    setNeedsSave(needsSave);
 }

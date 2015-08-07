@@ -8,8 +8,3 @@ InputDevice::InputDevice(QObject *parent)
 InputDevice::~InputDevice()
 {
 }
-
-QStringList InputDevice::supportedProperties() const
-{
-    return QStringList(QStringLiteral("enabled"));
-}

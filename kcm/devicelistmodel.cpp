@@ -20,11 +20,6 @@ void DeviceListModel::add(DeviceSettings *item)
     beginInsertRows(QModelIndex(), items_.count(), items_.count());
     items_.append(item);
     endInsertRows();
-
-    if (item->device()) {
-        connect(item->device(), &InputDevice::nameChanged,
-                this, &DeviceListModel::deviceNameChanged);
-    }
 }
 
 void DeviceListModel::remove(DeviceSettings *item)
@@ -37,11 +32,6 @@ void DeviceListModel::remove(DeviceSettings *item)
     beginRemoveRows(QModelIndex(), index, index);
     items_.removeAt(index);
     endRemoveRows();
-
-    if (item->device()) {
-        disconnect(item->device(), &InputDevice::nameChanged,
-                   this, &DeviceListModel::deviceNameChanged);
-    }
 }
 
 int DeviceListModel::rowCount(const QModelIndex &) const
@@ -66,23 +56,8 @@ QVariant DeviceListModel::data(const QModelIndex &index, int role) const
 
 QHash<int, QByteArray> DeviceListModel::roleNames() const
 {
-    return { { SettingsRole, QByteArrayLiteral("settings") },
+    return { { SettingsRole, QByteArrayLiteral("device") },
              { NameRole, QByteArrayLiteral("name") } };
-}
-
-void DeviceListModel::deviceNameChanged()
-{
-    InputDevice *dev = qobject_cast<InputDevice *>(sender());
-    if (!dev) {
-        return;
-    }
-
-    for (int i = 0; i < items_.count(); i++) {
-        if (items_[i]->device() == dev) {
-            QModelIndex index = this->index(i);
-            Q_EMIT dataChanged(index, index, { NameRole });
-        }
-    }
 }
 
 QObject *DeviceListModel::get(int index) const

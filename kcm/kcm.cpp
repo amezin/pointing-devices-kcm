@@ -8,7 +8,8 @@
 #include "devicemanager.h"
 #include "device.h"
 #include "devicesettings.h"
-#include "devicepropertybinding.h"
+#include "deviceproperty.h"
+#include "devicelistmodel.h"
 
 K_PLUGIN_FACTORY_WITH_JSON(PointingDevicesKCMFactory, "kcm_pointingdevices.json", registerPlugin<PointingDevicesKCM>();)
 
@@ -17,13 +18,14 @@ PointingDevicesKCM::PointingDevicesKCM(QObject *parent, const QVariantList &args
       deviceManager_(InputDeviceManager::create(this)),
       config_(QStringLiteral("pointingdevicesrc")),
       defaults_(QStringLiteral("pointingdevicesdefaultsrc")),
-      deviceList_(new DeviceListModel(this)),
-      outOfSync_(false)
+      deviceList_(new DeviceListModel(this))
 {
     KAboutData *about = new KAboutData("kcm_pointingdevices", i18n("Pointing Devices KCM"), "0.0.1");
     setAboutData(about);
 
-    qmlRegisterType<DevicePropertyBinding>("org.kde.PointingDevicesKCM", 1, 0, "DevicePropertyBinding");
+    qmlRegisterType<DeviceListModel>();
+    qmlRegisterType<DeviceSettings>();
+    qmlRegisterType<DeviceProperty>("org.kde.PointingDevicesKCM", 1, 0, "DeviceProperty");
 
     if (!deviceManager_) {
         return; // TODO: error message
@@ -49,11 +51,8 @@ void PointingDevicesKCM::addDevice(InputDevice *dev)
     deviceList_->add(settings);
     connect(settings, &DeviceSettings::needsSaveChanged,
             this, &PointingDevicesKCM::updateNeedsSave);
-    connect(settings, &DeviceSettings::differsFromActiveChanged,
-            this, &PointingDevicesKCM::updateOutOfSyncStatus);
 
     updateNeedsSave();
-    updateOutOfSyncStatus();
 }
 
 void PointingDevicesKCM::removeDevice(InputDevice *dev)
@@ -63,8 +62,6 @@ void PointingDevicesKCM::removeDevice(InputDevice *dev)
             deviceList_->remove(settings);
             disconnect(settings, &DeviceSettings::needsSaveChanged,
                        this, &PointingDevicesKCM::updateNeedsSave);
-            disconnect(settings, &DeviceSettings::differsFromActiveChanged,
-                       this, &PointingDevicesKCM::updateOutOfSyncStatus);
         }
     }
 }
@@ -82,22 +79,10 @@ void PointingDevicesKCM::updateNeedsSave()
     }
 }
 
-void PointingDevicesKCM::updateOutOfSyncStatus()
-{
-    bool outOfSync = false;
-    Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
-        if (settings->differsFromActive()) {
-            outOfSync = true;
-        }
-    }
-    if (outOfSync_ != outOfSync) {
-        outOfSync_ = outOfSync;
-        Q_EMIT outOfSyncChanged(outOfSync_);
-    }
-}
-
 void PointingDevicesKCM::load()
 {
+    config_.reparseConfiguration();
+    defaults_.reparseConfiguration();
     Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
         settings->loadSaved();
     }
@@ -105,6 +90,8 @@ void PointingDevicesKCM::load()
 
 void PointingDevicesKCM::defaults()
 {
+    config_.reparseConfiguration();
+    defaults_.reparseConfiguration();
     Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
         settings->loadDefaults();
     }
@@ -113,7 +100,7 @@ void PointingDevicesKCM::defaults()
 void PointingDevicesKCM::save()
 {
     Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
-        settings->apply(false);
+        settings->apply();
         settings->save();
     }
 }

@@ -1,59 +1,32 @@
 #include "xinputdeviceadapter.h"
 
+#include <algorithm>
+
 #include <QMetaObject>
 #include <QMetaProperty>
 
 #include "xinputdevice.h"
+#include "log.h"
 
 XInputDeviceAdapter::XInputDeviceAdapter(XInputDevice *impl, QObject *parent)
     : InputDevice(parent), impl(impl)
 {
-    connect(impl, &XInputDevice::devicePropertyAdded, this, &XInputDeviceAdapter::handlePropertyAdd);
-    connect(impl, &XInputDevice::devicePropertyRemoved, this, &XInputDeviceAdapter::handlePropertyRemove);
-    connect(impl, &XInputDevice::devicePropertyChanged, this, &XInputDeviceAdapter::handlePropertyChange);
+    connect(impl, &XInputDevice::devicePropertyAdded,
+            this, &XInputDeviceAdapter::handlePropertyAdded);
+    connect(impl, &XInputDevice::devicePropertyRemoved,
+            this, &XInputDeviceAdapter::handlePropertyRemoved);
+    connect(impl, &XInputDevice::devicePropertyChanged,
+            this, &XInputDeviceAdapter::handlePropertyChanged);
 
-#define MAP_PROPERTY(name, xiName) \
-    requiredDevProperties_[QByteArrayLiteral(name)].append(QByteArrayLiteral(xiName))
-
-    MAP_PROPERTY("enabled", "Device Enabled");
-
-    MAP_PROPERTY("accelProfile", "Device Accel Profile");
-    MAP_PROPERTY("accelConstantDeceleration", "Device Accel Constant Deceleration");
-    MAP_PROPERTY("accelAdaptiveDeceleration", "Device Accel Adaptive Deceleration");
-    MAP_PROPERTY("accelVelocityScaling", "Device Accel Velocity Scaling");
-
-    for (auto i = requiredDevProperties_.constBegin(); i != requiredDevProperties_.constEnd(); ++i) {
-        Q_FOREACH (const auto &prop, i.value()) {
-            auto &list = notifyOnChange_[prop];
-            if (!list.contains(i.key())) {
-                list.append(i.key());
-            }
+    Q_FOREACH (const auto &prop, impl->devicePropertyNames()) {
+        if (impl->devicePropertyExists(prop)) {
+            supported_.append(QString::fromLatin1(prop));
         }
     }
 }
 
 XInputDeviceAdapter::~XInputDeviceAdapter()
 {
-}
-
-QStringList XInputDeviceAdapter::supportedProperties() const
-{
-    auto interfaceProperties = InputDevice::supportedProperties();
-
-    for (auto i = requiredDevProperties_.constBegin(); i != requiredDevProperties_.constEnd(); ++i) {
-        bool allPropertiesArePresent = true;
-        Q_FOREACH (const auto &prop, i.value()) {
-            if (!impl->devicePropertyExists(prop)) {
-                allPropertiesArePresent = false;
-                break;
-            }
-        }
-        if (allPropertiesArePresent && !interfaceProperties.contains(i.key())) {
-            interfaceProperties.append(i.key());
-        }
-    }
-
-    return interfaceProperties;
 }
 
 QString XInputDeviceAdapter::name() const
@@ -68,63 +41,65 @@ QString XInputDeviceAdapter::identifier() const
 
     id.push_front(this->name());
 
-    static const auto xi = QByteArrayLiteral("xinput");
+    static const auto xi = QStringLiteral("xinput");
     id.push_back(xi);
 
     return id.join(':');
 }
 
-void XInputDeviceAdapter::handlePropertyAdd(const QByteArray &name)
+QStringList XInputDeviceAdapter::supportedProperties() const
 {
-    handlePropertyChange(name);
-    if (notifyOnChange_.contains(name)) {
-        Q_EMIT supportedPropertiesChanged();
-    }
+    return supported_;
 }
 
-void XInputDeviceAdapter::handlePropertyRemove(const QByteArray &name)
+void XInputDeviceAdapter::handlePropertyAdded(const QByteArray &prop)
 {
-    if (notifyOnChange_.contains(name)) {
-        Q_EMIT supportedPropertiesChanged();
+    auto name = QString::fromLatin1(prop);
+    if (supported_.contains(name)) {
+        return;
     }
+    supported_.append(name);
+    Q_EMIT propertyAdded(name);
+    Q_EMIT supportedPropertiesChanged();
 }
 
-void XInputDeviceAdapter::handlePropertyChange(const QByteArray &name)
+void XInputDeviceAdapter::handlePropertyRemoved(const QByteArray &prop)
 {
-    Q_FOREACH (const auto &prop, notifyOnChange_.value(name)) {
-        auto propIndex = metaObject()->indexOfProperty(prop.constData());
-        Q_ASSERT(propIndex >= 0);
-
-        metaObject()->property(propIndex).notifySignal().invoke(this);
+    auto name = QString::fromLatin1(prop);
+    if (!supported_.removeAll(name)) {
+        return;
     }
+    Q_EMIT propertyRemoved(name);
+    Q_EMIT supportedPropertiesChanged();
 }
 
-#define SIMPLE_GET_SET_TP(type, realType, prop, getter, setter) \
-    type XInputDeviceAdapter::getter() const \
-    { \
-        static const auto name = QByteArrayLiteral(prop); \
-        auto xiProp = requiredDevProperties_.value(name).first(); \
-        return static_cast<type>(impl->deviceProperty(xiProp).value<realType>()); \
-    } \
-    void XInputDeviceAdapter::setter(type v) \
-    { \
-        static const auto name = QByteArrayLiteral(prop); \
-        auto xiProp = requiredDevProperties_.value(name).first(); \
-        impl->setDeviceProperty(xiProp, static_cast<realType>(v)); \
+void XInputDeviceAdapter::handlePropertyChanged(const QByteArray &prop)
+{
+    Q_EMIT propertyChanged(QString::fromLatin1(prop));
+}
+
+QVariant XInputDeviceAdapter::deviceProperty(const QString &name) const
+{
+    return impl->deviceProperty(name.toLatin1());
+}
+
+bool XInputDeviceAdapter::setDeviceProperty(const QString &name, const QVariant &value)
+{
+    return impl->setDeviceProperty(name.toLatin1(), value);
+}
+
+bool XInputDeviceAdapter::isPropertyWritable(const QString &name) const
+{
+    static const QStringList readOnly = { QStringLiteral("Device Node"),
+                                          QStringLiteral("Device Product ID"),
+                                          QStringLiteral("Axis Labels"),
+                                          QStringLiteral("Button Labels") };
+    if (readOnly.contains(name)) {
+        return false;
     }
-
-#define SIMPLE_GET_SET_T(type, realType, getter, setter) \
-    SIMPLE_GET_SET_TP(type, realType, #getter, getter, setter)
-
-#define SIMPLE_GET_SET_P(type, prop, getter, setter) \
-    SIMPLE_GET_SET_TP(type, type, prop, getter, setter)
-
-#define SIMPLE_GET_SET(type, getter, setter) \
-    SIMPLE_GET_SET_TP(type, type, #getter, getter, setter)
-
-SIMPLE_GET_SET_P(bool, "enabled", isEnabled, setEnabled)
-
-SIMPLE_GET_SET_T(InputDevice::XAccelerationProfile, int, accelProfile, setAccelProfile)
-SIMPLE_GET_SET(float, accelConstantDeceleration, setAccelConstantDeceleration)
-SIMPLE_GET_SET(float, accelAdaptiveDeceleration, setAccelAdaptiveDeceleration)
-SIMPLE_GET_SET(float, accelVelocityScaling, setAccelVelocityScaling)
+    if (!name.startsWith(QLatin1String("libinput "))) {
+        return true;
+    }
+    return !name.endsWith(QLatin1String(" Default")) &&
+            !name.endsWith(QLatin1String(" Available"));
+}

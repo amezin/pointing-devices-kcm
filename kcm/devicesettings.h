@@ -1,72 +1,59 @@
 #pragma once
 
+#include <QHash>
 #include <QPointer>
-#include <QQmlPropertyMap>
+#include <QTimer>
 #include <KConfigGroup>
 
 #include "device.h"
 
-class DeviceSettings : public QQmlPropertyMap
+class DeviceProperty;
+
+class DeviceSettings : public QObject
 {
     Q_OBJECT
-
-    Q_PROPERTY(QObject *device READ device NOTIFY deviceDestroyed)
-    Q_PROPERTY(QStringList supportedProperties READ supportedProperties NOTIFY supportedPropertiesChanged)
-
-    Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged)
-    Q_PROPERTY(bool differsFromDefaults READ differsFromDefaults NOTIFY differsFromDefaultsChanged)
-    Q_PROPERTY(bool differsFromActive READ differsFromActive NOTIFY differsFromActiveChanged)
 public:
     DeviceSettings(KConfig *config, KConfig *defaults, InputDevice *,
                    QObject *parent = Q_NULLPTR);
     ~DeviceSettings() Q_DECL_OVERRIDE;
 
     InputDevice *device() const;
+    bool isPropertySupported(const QString &) const;
+    bool isPropertyWritable(const QString &) const;
 
     bool needsSave() const;
-    bool differsFromDefaults() const;
-    bool differsFromActive() const;
 
     void loadSaved();
     void loadDefaults();
     void loadActive();
 
-    void apply(bool updateDiff = true);
-    void save(bool updateDiff = true);
+    void apply();
+    void save();
 
-    QStringList supportedProperties() const;
+    QVariant value(const QString &) const;
+    void setValue(const QString &, const QVariant &);
 
 Q_SIGNALS:
-    void deviceDestroyed();
-    void supportedPropertiesChanged();
-
     void needsSaveChanged();
-    void differsFromActiveChanged();
-    void differsFromDefaultsChanged();
-
-protected:
-    QVariant updateValue(const QString &key, const QVariant &input) Q_DECL_OVERRIDE;
+    void changed();
 
 private:
-    QVariant activeValue(const QString &) const;
-    QVariant savedValue(const QString &) const;
-    QVariant defaultValue(const QString &) const;
+    void setNeedsSave(bool);
 
-    void setNeedsSave(const QStringList &);
-    void setDiffersFromDefaults(const QStringList &);
-    void setDiffersFromActive(const QStringList &);
+    void addProperty(const QString &name);
+    void removeProperty(const QString &name);
+    void updateProperty(const QString &name);
 
-    typedef QVariant (DeviceSettings::*Getter)(const QString &) const;
-    QStringList differsFrom(Getter, const QStringList &) const;
-    void updateDiffs(const QStringList &, bool discardOld = false);
-    void handlePropertyChange(const QString &, const QVariant &);
+    QVariant savedValue(const QString &name) const;
+    QVariant defaultValue(const QString &name) const;
+    QVariant deviceValue(const QString &name) const;
+    QVariant fixupType(const QVariant &, const QVariant &) const;
 
-    void load(Getter, bool overwrite = true);
-    void load(Getter, const QStringList &, bool overwrite = true);
-    void updatePropertySet();
-    void clearUnsupportedProperties();
+    bool setValueNoSignal(const QString &, const QVariant &);
+    void updateStatus();
 
     QPointer<InputDevice> device_;
     KConfigGroup configGroup_, defaultsGroup_;
-    QStringList needsSave_, differsFromActive_, differsFromDefaults_;
+    QVariantHash values_, readonly_;
+    bool needsSave_;
 };
