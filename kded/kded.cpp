@@ -63,6 +63,10 @@ void PointingDevicesKDED::applyProperty(InputDevice *device, const QString &prop
     }
 
     auto currentValue = device->deviceProperty(prop);
+    if (!currentValue.isValid()) {
+        return;
+    }
+
     if (!defaultsGroup.hasKey(prop)) {
         defaultsGroup.writeEntry(prop, currentValue);
     }
