@@ -227,7 +227,6 @@ bool XInputDevice::setDeviceProperty(xcb_atom_t atom, const QVariant &value)
         items.data8 = reinterpret_cast<uint8_t *>(v.data());
         xcb_input_xi_change_property_aux(connection(), id_, XCB_PROP_MODE_REPLACE,
                                          info.format, atom, info.type, v.size(), &items);
-        xcb_flush(connection());
         return true;
     }
 
@@ -258,7 +257,6 @@ bool XInputDevice::setDeviceProperty(xcb_atom_t atom, const QVariant &value)
 
     xcb_input_xi_change_property_aux(connection(), id_, XCB_PROP_MODE_REPLACE,
                                      info.format, atom, info.type, asList.size(), &items);
-    xcb_flush(connection());
     return true;
 }
 
@@ -331,4 +329,9 @@ void XInputDevice::processEvent(const xcb_input_hierarchy_info_t *e)
         type_ = xcb_input_device_type_t(e->type);
         Q_EMIT typeChanged();
     }
+}
+
+bool XInputDevice::flush()
+{
+    return xcb_flush(connection()) > 0;
 }

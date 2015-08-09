@@ -24,6 +24,8 @@ private:
     void init();
 
     void addDevice(XInputDevice *);
+    XInputDeviceAdapter *addDeviceNoSignal(XInputDevice *);
+    Q_INVOKABLE void delayedEmitDeviceAdded(XInputDeviceAdapter *device);
     void removeDevice(XInputDevice *);
 
     void handleDeviceTypeChange();

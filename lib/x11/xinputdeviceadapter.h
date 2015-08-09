@@ -21,15 +21,19 @@ public:
     QString identifier() const Q_DECL_OVERRIDE;
 
     QVariant deviceProperty(const QString &name) const Q_DECL_OVERRIDE;
-    bool setDeviceProperty(const QString &name, const QVariant &value) Q_DECL_OVERRIDE;
+    bool setProperties(const QVariantHash &) Q_DECL_OVERRIDE;
 
     QStringList supportedProperties() const Q_DECL_OVERRIDE;
     bool isPropertyWritable(const QString &name) const Q_DECL_OVERRIDE;
+
+    QVariant defaultValue(const QString &prop) const Q_DECL_OVERRIDE;
 
 private:
     void handlePropertyAdded(const QByteArray &);
     void handlePropertyRemoved(const QByteArray &);
     void handlePropertyChanged(const QByteArray &);
+
+    Q_INVOKABLE void delayedEmitPropertyAdded(const QString &);
 
     XInputDevice *impl;
 

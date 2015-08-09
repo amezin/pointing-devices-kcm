@@ -48,35 +48,66 @@ void PointingDevicesKDED::applyConfig(InputDevice *device)
     auto group = config_.group(device->identifier());
     auto defaultsGroup = defaults_.group(device->identifier());
 
-    Q_FOREACH (const auto &prop, device->supportedProperties()) {
-        applyProperty(device, prop, group, defaultsGroup);
-    }
+    applyProperties(device, device->supportedProperties(), group, defaultsGroup);
 
     defaultsGroup.sync();
 }
 
-void PointingDevicesKDED::applyProperty(InputDevice *device, const QString &prop,
-                                        KConfigGroup &group, KConfigGroup &defaultsGroup)
+QVariant PointingDevicesKDED::fixupType(const QVariant &value, const QVariant &pattern)
 {
-    if (!device->isPropertyWritable(prop)) {
-        return;
+    if (!value.isValid()) {
+        return value;
     }
 
-    auto currentValue = device->deviceProperty(prop);
-    if (!currentValue.isValid()) {
-        return;
+    QVariant converted(value);
+    converted.convert(pattern.userType());
+
+    if (converted.userType() != QMetaType::QVariantList &&
+            converted.userType() != QMetaType::QStringList)
+    {
+        return converted;
     }
 
-    if (!defaultsGroup.hasKey(prop)) {
-        defaultsGroup.writeEntry(prop, currentValue);
+    QVariantList list(converted.toList());
+    QVariantList listPattern(pattern.toList());
+
+    QVariantList listConverted;
+    listConverted.reserve(listPattern.size());
+    for (int i = 0; i < listPattern.size(); i++) {
+        listConverted.append(fixupType(list.value(i), listPattern.at(i)));
     }
 
-    auto defaultValue = defaultsGroup.readEntry(prop, currentValue);
-    auto newValue = group.readEntry(prop, defaultValue);
+    return listConverted;
+}
 
-    if (newValue != currentValue) {
-        device->setDeviceProperty(prop, newValue);
+bool PointingDevicesKDED::applyProperties(InputDevice *device, const QStringList &props,
+                                          KConfigGroup &group, KConfigGroup &defaultsGroup)
+{
+    QVariantHash changes;
+    Q_FOREACH (const auto &prop, props) {
+        if (!device->isPropertyWritable(prop)) {
+            continue;
+        }
+
+        auto currentValue = device->deviceProperty(prop);
+        if (!currentValue.isValid()) {
+            continue;
+        }
+
+        auto defaultValue = device->defaultValue(prop);
+        if (!defaultValue.isValid()) {
+            if (!defaultsGroup.hasKey(prop)) {
+                defaultsGroup.writeEntry(prop, currentValue);
+            }
+            defaultValue = fixupType(defaultsGroup.readEntry(prop, currentValue), currentValue);
+        }
+        auto newValue = fixupType(group.readEntry(prop, defaultValue), currentValue);
+
+        if (newValue != currentValue) {
+            changes.insert(prop, newValue);
+        }
     }
+    return device->setProperties(changes);
 }
 
 void PointingDevicesKDED::reapplyConfig(const QString &prop)
@@ -87,7 +118,7 @@ void PointingDevicesKDED::reapplyConfig(const QString &prop)
     config_.reparseConfiguration();
     auto group = config_.group(device->identifier());
     auto defaultsGroup = defaults_.group(device->identifier());
-    applyProperty(device, prop, group, defaultsGroup);
+    applyProperties(device, QStringList(prop), group, defaultsGroup);
     defaultsGroup.sync();
 }
 

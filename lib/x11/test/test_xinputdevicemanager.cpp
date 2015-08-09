@@ -38,6 +38,7 @@ private Q_SLOTS:
 
         auto propertyName = QByteArrayLiteral("Device Accel Constant Deceleration");
         QVERIFY(dev->setDeviceProperty(propertyName, QVariant(1.5f)));
+        QVERIFY(dev->flush());
 
         QSignalSpy spy(dev, SIGNAL(devicePropertyChanged(QByteArray)));
         QVERIFY(spy.wait());
@@ -47,6 +48,7 @@ private Q_SLOTS:
         QCOMPARE(dev->deviceProperty(propertyName), QVariant(1.5f));
 
         QVERIFY(dev->setDeviceProperty(propertyName, QVariant(1.0f)));
+        QVERIFY(dev->flush());
         spy.clear();
 
         QVERIFY(spy.wait());
@@ -91,6 +93,7 @@ private Q_SLOTS:
         QCOMPARE(dev->deviceProperty(propertyName).toList(), matrix);
 
         QVERIFY(dev->setDeviceProperty(propertyName, newMatrix));
+        QVERIFY(dev->flush());
 
         QSignalSpy spy(dev, SIGNAL(devicePropertyChanged(QByteArray)));
         QVERIFY(spy.wait());

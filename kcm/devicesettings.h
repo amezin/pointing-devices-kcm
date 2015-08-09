@@ -36,6 +36,7 @@ public:
 Q_SIGNALS:
     void needsSaveChanged();
     void changed();
+    void deviceDisconnected();
 
 private:
     void setNeedsSave(bool);
@@ -47,7 +48,7 @@ private:
     QVariant savedValue(const QString &name) const;
     QVariant defaultValue(const QString &name) const;
     QVariant deviceValue(const QString &name) const;
-    QVariant fixupType(const QVariant &, const QVariant &) const;
+    static QVariant fixupType(const QVariant &, const QVariant &);
 
     bool setValueNoSignal(const QString &, const QVariant &);
     void updateStatus();

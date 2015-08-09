@@ -32,7 +32,7 @@ PointingDevicesKCM::PointingDevicesKCM(QObject *parent, const QVariantList &args
     }
 
     connect(deviceManager_, &InputDeviceManager::deviceAdded,
-            this, &PointingDevicesKCM::addDevice);
+            this, &PointingDevicesKCM::addDevice, Qt::QueuedConnection);
     connect(deviceManager_, &InputDeviceManager::deviceRemoved,
             this, &PointingDevicesKCM::removeDevice);
     Q_FOREACH (InputDevice *dev, deviceManager_->devices()) {

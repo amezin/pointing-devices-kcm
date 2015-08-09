@@ -38,12 +38,7 @@ QString XInputDeviceAdapter::identifier() const
 {
     static const auto name = QByteArrayLiteral("Device Product ID");
     auto id = impl->deviceProperty(name).toStringList();
-
     id.push_front(this->name());
-
-    static const auto xi = QStringLiteral("xinput");
-    id.push_back(xi);
-
     return id.join(':');
 }
 
@@ -59,7 +54,16 @@ void XInputDeviceAdapter::handlePropertyAdded(const QByteArray &prop)
         return;
     }
     supported_.append(name);
-    Q_EMIT propertyAdded(name);
+    QMetaObject::invokeMethod(this, "delayedEmitPropertyAdded", Qt::QueuedConnection,
+                              Q_ARG(QString, name));
+}
+
+void XInputDeviceAdapter::delayedEmitPropertyAdded(const QString &prop)
+{
+    if (!supported_.contains(prop)) {
+        return;
+    }
+    Q_EMIT propertyAdded(prop);
     Q_EMIT supportedPropertiesChanged();
 }
 
@@ -83,9 +87,28 @@ QVariant XInputDeviceAdapter::deviceProperty(const QString &name) const
     return impl->deviceProperty(name.toLatin1());
 }
 
-bool XInputDeviceAdapter::setDeviceProperty(const QString &name, const QVariant &value)
+bool XInputDeviceAdapter::setProperties(const QVariantHash &props)
 {
-    return impl->setDeviceProperty(name.toLatin1(), value);
+    static const QString enabledStr(QStringLiteral("Device Enabled"));
+    static const QByteArray enabledBa(QByteArrayLiteral("Device Enabled"));
+    if (props.value(enabledStr, false) == true) {
+        if (!impl->setDeviceProperty(enabledBa, true)) {
+            return false;
+        }
+    }
+    for (auto i = props.constBegin(); i != props.constEnd(); ++i) {
+        if (i.key() != enabledStr) {
+            if (!impl->setDeviceProperty(i.key().toLatin1(), i.value())) {
+                return false;
+            }
+        }
+    }
+    if (props.value(enabledStr, true) == false) {
+        if (!impl->setDeviceProperty(enabledBa, false)) {
+            return false;
+        }
+    }
+    return impl->flush();
 }
 
 bool XInputDeviceAdapter::isPropertyWritable(const QString &name) const
@@ -97,9 +120,26 @@ bool XInputDeviceAdapter::isPropertyWritable(const QString &name) const
     if (readOnly.contains(name)) {
         return false;
     }
-    if (!name.startsWith(QLatin1String("libinput "))) {
-        return true;
+    if (name.startsWith(QLatin1String("libinput "))) {
+        return !name.endsWith(QLatin1String(" Default")) &&
+               !name.endsWith(QLatin1String(" Available"));
     }
-    return !name.endsWith(QLatin1String(" Default")) &&
-            !name.endsWith(QLatin1String(" Available"));
+    return true;
+}
+
+QVariant XInputDeviceAdapter::defaultValue(const QString &prop) const
+{
+#if 0
+    /*
+     * We can take default values from libinput. But Xorg.conf will be mostly
+     * ignored then.
+     */
+    if (prop.startsWith(QLatin1String("libinput "))) {
+        auto defaultName = prop + QStringLiteral(" Default");
+        if (supported_.contains(defaultName)) {
+            return deviceProperty(defaultName);
+        }
+    }
+#endif
+    return QVariant();
 }

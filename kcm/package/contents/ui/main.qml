@@ -19,11 +19,15 @@ ColumnLayout {
     }
 
     property var currentDevice: kcm.deviceList.get(deviceCombo.currentIndex)
+    Connections {
+        target: currentDevice
+        onDeviceDisconnected: deviceCombo.currentIndex = 0
+    }
 
     Loader {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        active: currentDevice
+        active: !!currentDevice
         sourceComponent: DeviceSettingsUI { }
     }
 }

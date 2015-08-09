@@ -45,6 +45,9 @@ bool DeviceProperty::isAvailable() const
 
 void DeviceProperty::setAvailable(bool value)
 {
+    if (!value) {
+        setWritable(false);
+    }
     if (value != available_) {
         available_ = value;
         Q_EMIT availableChanged(value);

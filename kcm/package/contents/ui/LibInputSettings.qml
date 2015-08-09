@@ -21,31 +21,43 @@ ColumnLayout {
     }
 
     CheckBox {
+        id: enabledCheckBox
         text: i18n("Device enabled")
+
         SimpleProperty {
             id: x11Enabled
             name: "Device Enabled"
         }
+
         LibInputFlag {
             id: libinputDisabled
             name: "libinput Send Events Mode Enabled"
             availableName: "libinput Send Events Modes Available"
             index: 0
         }
+
         visible: x11Enabled.available || libinputDisabled.available
         enabled: x11Enabled.writable || libinputDisabled.writable
-        checkedState: {
-            if (!x11Enabled.available && !libinputDisabled.available) return Qt.Unchecked
-            if (!x11Enabled.available) return libinputDisabled.value ? Qt.Unchecked : Qt.Checked
-            if (!libinputDisabled.available) return x11Enabled.value ? Qt.Checked : Qt.Unchecked
-            if (!libinputDisabled.value !== !!x11Enabled.value) return Qt.PartiallyChecked
-            return libinputDisabled.value ? Qt.Unchecked : Qt.Checked
+
+        Binding on checked {
+            when: x11Enabled.available && libinputDisabled.available
+            value: x11Enabled.value && !libinputDisabled.value
+        }
+
+        Binding on checked {
+            when: x11Enabled.available && !libinputDisabled.available
+            value: x11Enabled.value
+        }
+
+        Binding on checked {
+            when: !x11Enabled.available && libinputDisabled.available
+            value: !libinputDisabled.value
         }
 
         onClicked: {
-            partiallyCheckedEnabled = false
-            if (x11Enabled.writable) x11Enabled.setValue(checked)
-            if (libinputDisabled.writable) libinputDisabled.setValue(!checked)
+            var value = checked
+            x11Enabled.setValue(value)
+            libinputDisabled.setValue(!value)
         }
     }
 
@@ -157,8 +169,8 @@ ColumnLayout {
     GroupBox {
         Layout.fillWidth: true
         title: i18n("Click emulation")
-        visible:  softButtons.property.available ||
-                  clickFinger.property.available
+        visible: softButtons.property.available ||
+                 clickFinger.property.available
 
         ColumnLayout {
             ExclusiveGroup {

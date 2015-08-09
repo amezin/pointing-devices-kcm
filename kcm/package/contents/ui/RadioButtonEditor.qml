@@ -2,10 +2,14 @@ import QtQuick 2.4
 import QtQuick.Controls 1.3
 
 RadioButton {
+    id: root
     property var property
 
-    visible: property && property.available
-    enabled: property && property.writable
-    checked: property && property.available && property.value
-    onCheckedChanged: if (property && property.writable) property.setValue(checked)
+    visible: property.available
+    enabled: property.writable
+    Binding on checked {
+        when: root.property.available
+        value: root.property.value
+    }
+    onCheckedChanged: property.setValue(checked)
 }

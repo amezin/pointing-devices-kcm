@@ -56,6 +56,8 @@ public:
     void processEvent(const xcb_input_property_event_t *);
     void processEvent(const xcb_input_hierarchy_info_t *);
 
+    bool flush();
+
 Q_SIGNALS:
     void devicePropertyAdded(const QByteArray &);
     void devicePropertyRemoved(const QByteArray &);

@@ -21,10 +21,12 @@ public:
     virtual QString identifier() const = 0;
 
     virtual QVariant deviceProperty(const QString &name) const = 0;
-    virtual bool setDeviceProperty(const QString &name, const QVariant &value) = 0;
+    virtual bool setProperties(const QVariantHash &) = 0;
 
     virtual QStringList supportedProperties() const = 0;
     virtual bool isPropertyWritable(const QString &name) const = 0;
+
+    virtual QVariant defaultValue(const QString &prop) const = 0;
 
 Q_SIGNALS:
     void supportedPropertiesChanged();

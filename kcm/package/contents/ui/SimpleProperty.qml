@@ -6,6 +6,8 @@ DeviceProperty {
     device: currentDevice
 
     function setValue(v) {
-        value = v
+        if (available && writable) {
+            value = v
+        }
     }
 }

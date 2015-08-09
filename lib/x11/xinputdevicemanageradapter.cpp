@@ -36,7 +36,7 @@ void XInputDeviceManagerAdapter::init()
             this, &XInputDeviceManagerAdapter::removeDevice);
 
     Q_FOREACH (auto device, impl->devices()) {
-        addDevice(device);
+        addDeviceNoSignal(device);
     }
 }
 
@@ -55,10 +55,10 @@ XInputDeviceAdapter *XInputDeviceManagerAdapter::wrapperFor(XInputDevice *device
     return Q_NULLPTR;
 }
 
-void XInputDeviceManagerAdapter::addDevice(XInputDevice *device)
+XInputDeviceAdapter *XInputDeviceManagerAdapter::addDeviceNoSignal(XInputDevice *device)
 {
     if (wrapperFor(device)) {
-        return;
+        return Q_NULLPTR;
     }
 
     connect(device, &XInputDevice::typeChanged,
@@ -72,18 +72,33 @@ void XInputDeviceManagerAdapter::addDevice(XInputDevice *device)
             Qt::UniqueConnection);
 
     if (device->type() != XCB_INPUT_DEVICE_TYPE_SLAVE_POINTER) {
-        return;
+        return Q_NULLPTR;
     }
 
     static const auto DeviceProductId = QByteArrayLiteral("Device Product ID");
     if (!device->devicePropertyExists(DeviceProductId)) {
-        return;
+        return Q_NULLPTR;
     }
 
     auto wrapper = new XInputDeviceAdapter(device, this);
     devices_.append(wrapper);
+    return wrapper;
+}
 
-    Q_EMIT deviceAdded(wrapper);
+void XInputDeviceManagerAdapter::addDevice(XInputDevice *device)
+{
+    auto wrapper = addDeviceNoSignal(device);
+    if (wrapper) {
+        QMetaObject::invokeMethod(this, "delayedEmitDeviceAdded", Qt::QueuedConnection,
+                                  Q_ARG(XInputDeviceAdapter*, wrapper));
+    }
+}
+
+void XInputDeviceManagerAdapter::delayedEmitDeviceAdded(XInputDeviceAdapter *device)
+{
+    if (devices_.contains(device)) {
+        Q_EMIT deviceAdded(device);
+    }
 }
 
 void XInputDeviceManagerAdapter::removeDevice(XInputDevice *device)

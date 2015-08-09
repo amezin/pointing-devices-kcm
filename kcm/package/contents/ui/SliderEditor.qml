@@ -5,13 +5,11 @@ Slider {
     id: root
     property var property
 
-    visible: property && property.available
-    enabled: property && property.writable
-
+    visible: property.available
+    enabled: property.writable
     Binding on value {
-        when: root.property && root.property.available
-        value: root.property ? root.property.value : 0
+        when: root.property.available
+        value: root.property.value
     }
-
-    onValueChanged: if (property && property.writable) property.setValue(value)
+    onValueChanged: property.setValue(value)
 }
