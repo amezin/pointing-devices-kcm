@@ -18,7 +18,8 @@ PointingDevicesKCM::PointingDevicesKCM(QObject *parent, const QVariantList &args
       deviceManager_(InputDeviceManager::create(this)),
       config_(QStringLiteral("pointingdevicesrc")),
       defaults_(QStringLiteral("pointingdevicesdefaultsrc")),
-      deviceList_(new DeviceListModel(this))
+      deviceList_(new DeviceListModel(this)),
+      canTest_(false), canRevertTest_(false)
 {
     KAboutData *about = new KAboutData("kcm_pointingdevices", i18n("Pointing Devices KCM"), "0.0.1");
     setAboutData(about);
@@ -42,6 +43,7 @@ PointingDevicesKCM::PointingDevicesKCM(QObject *parent, const QVariantList &args
 
 PointingDevicesKCM::~PointingDevicesKCM()
 {
+    revertTest();
 }
 
 void PointingDevicesKCM::addDevice(InputDevice *dev)
@@ -51,8 +53,14 @@ void PointingDevicesKCM::addDevice(InputDevice *dev)
     deviceList_->add(settings);
     connect(settings, &DeviceSettings::needsSaveChanged,
             this, &PointingDevicesKCM::updateNeedsSave);
+    connect(settings, &DeviceSettings::differsFromActiveChanged,
+            this, &PointingDevicesKCM::updateCanTest);
+    connect(settings, &DeviceSettings::savedDiffersFromActiveChanged,
+            this, &PointingDevicesKCM::updateCanRevertTest);
 
     updateNeedsSave();
+    updateCanTest();
+    updateCanRevertTest();
 }
 
 void PointingDevicesKCM::removeDevice(InputDevice *dev)
@@ -62,6 +70,10 @@ void PointingDevicesKCM::removeDevice(InputDevice *dev)
             deviceList_->remove(settings);
             disconnect(settings, &DeviceSettings::needsSaveChanged,
                        this, &PointingDevicesKCM::updateNeedsSave);
+            disconnect(settings, &DeviceSettings::differsFromActiveChanged,
+                       this, &PointingDevicesKCM::updateCanTest);
+            disconnect(settings, &DeviceSettings::savedDiffersFromActiveChanged,
+                       this, &PointingDevicesKCM::updateCanRevertTest);
         }
     }
 }
@@ -79,10 +91,33 @@ void PointingDevicesKCM::updateNeedsSave()
     }
 }
 
+void PointingDevicesKCM::updateCanTest()
+{
+    bool canTest = false;
+    Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
+        if (settings->differsFromActive()) {
+            canTest = true;
+        }
+    }
+    setCanTest(canTest);
+}
+
+void PointingDevicesKCM::updateCanRevertTest()
+{
+    bool canRevertTest = false;
+    Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
+        if (settings->savedDiffersFromActive()) {
+            canRevertTest = true;
+        }
+    }
+    setCanRevertTest(canRevertTest);
+}
+
 void PointingDevicesKCM::load()
 {
     config_.reparseConfiguration();
     defaults_.reparseConfiguration();
+    revertTest();
     Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
         settings->loadSaved();
     }
@@ -92,6 +127,7 @@ void PointingDevicesKCM::defaults()
 {
     config_.reparseConfiguration();
     defaults_.reparseConfiguration();
+    revertTest();
     Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
         settings->loadDefaults();
     }
@@ -102,6 +138,46 @@ void PointingDevicesKCM::save()
     Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
         settings->apply();
         settings->save();
+    }
+}
+
+bool PointingDevicesKCM::canTest() const
+{
+    return canTest_;
+}
+
+void PointingDevicesKCM::setCanTest(bool canTest)
+{
+    if (canTest_ != canTest) {
+        canTest_ = canTest;
+        Q_EMIT canTestChanged();
+    }
+}
+
+bool PointingDevicesKCM::canRevertTest() const
+{
+    return canRevertTest_;
+}
+
+void PointingDevicesKCM::setCanRevertTest(bool canRevertTest)
+{
+    if (canRevertTest_ != canRevertTest) {
+        canRevertTest_ = canRevertTest;
+        Q_EMIT canRevertTestChanged();
+    }
+}
+
+void PointingDevicesKCM::test()
+{
+    Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
+        settings->apply();
+    }
+}
+
+void PointingDevicesKCM::revertTest()
+{
+    Q_FOREACH (DeviceSettings *settings, deviceList_->all()) {
+        settings->applySaved();
     }
 }
 

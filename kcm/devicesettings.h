@@ -22,6 +22,8 @@ public:
     bool isPropertyWritable(const QString &) const;
 
     bool needsSave() const;
+    bool differsFromActive() const;
+    bool savedDiffersFromActive() const;
 
     void loadSaved();
     void loadDefaults();
@@ -29,17 +31,22 @@ public:
 
     void apply();
     void save();
+    void applySaved();
 
     QVariant value(const QString &) const;
     void setValue(const QString &, const QVariant &);
 
 Q_SIGNALS:
     void needsSaveChanged();
+    void differsFromActiveChanged();
+    void savedDiffersFromActiveChanged();
     void changed();
     void deviceDisconnected();
 
 private:
     void setNeedsSave(bool);
+    void setDiffersFromActive(bool);
+    void setSavedDiffersFromActive(bool);
 
     void addProperty(const QString &name);
     void removeProperty(const QString &name);
@@ -51,10 +58,12 @@ private:
     static QVariant fixupType(const QVariant &, const QVariant &);
 
     bool setValueNoSignal(const QString &, const QVariant &);
-    void updateStatus();
+    void updateNeedsSave();
+    void updateDiffersFromActive();
+    void updateSavedDiffersFromActive();
 
     QPointer<InputDevice> device_;
     KConfigGroup configGroup_, defaultsGroup_;
     QVariantHash values_, readonly_;
-    bool needsSave_;
+    bool needsSave_, differsFromActive_, savedDiffersFromActive_;
 };

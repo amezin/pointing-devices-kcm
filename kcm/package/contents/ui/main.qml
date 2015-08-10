@@ -17,6 +17,31 @@ ColumnLayout {
             textRole: "name"
             Layout.fillWidth: true
         }
+
+        Action {
+            id: testAction
+            text: i18n("Test")
+            enabled: kcm.canTest
+            onTriggered: kcm.test()
+        }
+
+        Action {
+            id: stopTestAction
+            text: i18n("Revert to saved settings")
+            shortcut: "Esc"
+            enabled: kcm.canRevertTest
+            onTriggered: kcm.revertTest()
+        }
+
+        Button {
+            action: testAction
+            visible: testAction.enabled
+        }
+
+        Button {
+            action: stopTestAction
+            visible: stopTestAction.enabled
+        }
     }
 
     property var currentDevice: kcm.deviceList.get(deviceCombo.currentIndex)
