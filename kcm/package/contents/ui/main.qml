@@ -6,8 +6,9 @@ import org.kde.PointingDevicesKCM 1.0
 
 ColumnLayout {
     RowLayout {
-        Label {
+        AttachedLabel {
             text: i18n("Device:")
+            target: deviceCombo
         }
 
         ComboBox {

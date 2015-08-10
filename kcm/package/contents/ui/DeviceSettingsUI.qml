@@ -10,10 +10,34 @@ Item {
         name: "libinput Accel Speed"
     }
 
+    SimpleProperty {
+        id: evdevProperty
+        name: "Evdev Axis Inversion"
+    }
+
+    SimpleProperty {
+        id: synapticsProperty
+        name: "Synaptics Off"
+    }
+
     Loader {
         anchors.left: parent.left
         anchors.right: parent.right
         active: libinputProperty.available
         sourceComponent: LibInputSettings { }
+    }
+
+    Loader {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        active: evdevProperty.available
+        sourceComponent: EvdevSettings { }
+    }
+
+    Loader {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        active: synapticsProperty.available
+        sourceComponent: SynapticsSettings { }
     }
 }

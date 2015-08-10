@@ -7,8 +7,9 @@ ColumnLayout {
         enabled: accelSpeed.property.writable
         visible: accelSpeed.property.available
 
-        Label {
+        AttachedLabel {
             text: i18n("Pointer speed:")
+            target: accelSpeed
         }
 
         SliderEditor {
