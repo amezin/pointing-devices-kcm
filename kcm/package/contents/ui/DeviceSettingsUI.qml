@@ -21,8 +21,7 @@ Item {
     }
 
     Loader {
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.horizontalCenter: settingsRoot.horizontalCenter
         active: libinputProperty.available
         sourceComponent: LibInputSettings { }
     }
