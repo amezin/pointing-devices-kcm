@@ -28,9 +28,18 @@ InputDevice *InputDeviceManager::deviceByIdentifier(const QString &id) const
 
 InputDeviceManager *InputDeviceManager::create(QObject *parent)
 {
-    KPluginLoader loader(QStringLiteral("pointingdevices_x11"));
-    if (!loader.factory()) {
-        qCCritical(POINTINGDEVICES) << "Can't load plugin" << loader.fileName() << ":" << loader.errorString();
+    KPluginLoader kwinLoader(QStringLiteral("pointingdevices_kwin"));
+    if (kwinLoader.factory()) {
+        auto manager = kwinLoader.factory()->create<InputDeviceManager>(parent);
+        if (!manager->devices().isEmpty()) {
+            return manager;
+        }
+        delete manager;
     }
-    return loader.factory()->create<InputDeviceManager>(parent);
+
+    KPluginLoader x11Loader(QStringLiteral("pointingdevices_x11"));
+    if (!x11Loader.factory()) {
+        qCCritical(POINTINGDEVICES) << "Can't load plugin" << x11Loader.fileName() << ":" << x11Loader.errorString();
+    }
+    return x11Loader.factory()->create<InputDeviceManager>(parent);
 }
