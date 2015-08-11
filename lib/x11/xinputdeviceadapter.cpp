@@ -64,7 +64,6 @@ void XInputDeviceAdapter::delayedEmitPropertyAdded(const QString &prop)
         return;
     }
     Q_EMIT propertyAdded(prop);
-    Q_EMIT supportedPropertiesChanged();
 }
 
 void XInputDeviceAdapter::handlePropertyRemoved(const QByteArray &prop)
@@ -74,7 +73,6 @@ void XInputDeviceAdapter::handlePropertyRemoved(const QByteArray &prop)
         return;
     }
     Q_EMIT propertyRemoved(name);
-    Q_EMIT supportedPropertiesChanged();
 }
 
 void XInputDeviceAdapter::handlePropertyChanged(const QByteArray &prop)
