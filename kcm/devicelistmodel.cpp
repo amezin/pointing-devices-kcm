@@ -62,7 +62,7 @@ QHash<int, QByteArray> DeviceListModel::roleNames() const
 
 QObject *DeviceListModel::get(int index) const
 {
-    if (index < 0 || index > items_.count()) {
+    if (index < 0 || index >= items_.count()) {
         return Q_NULLPTR;
     }
     return items_[index];
