@@ -7,12 +7,7 @@ Item {
 
     SimpleProperty {
         id: libinputProperty
-        name: "libinput Accel Speed"
-    }
-
-    SimpleProperty {
-        id: evdevProperty
-        name: "Evdev Axis Inversion"
+        name: "libinput Send Events Mode Enabled"
     }
 
     SimpleProperty {
@@ -29,14 +24,14 @@ Item {
     Loader {
         anchors.left: parent.left
         anchors.right: parent.right
-        active: evdevProperty.available
-        sourceComponent: EvdevSettings { }
+        active: synapticsProperty.available
+        sourceComponent: SynapticsSettings { }
     }
 
     Loader {
         anchors.left: parent.left
         anchors.right: parent.right
-        active: synapticsProperty.available
-        sourceComponent: SynapticsSettings { }
+        active: !libinputProperty.available && !synapticsProperty.available
+        sourceComponent: EvdevSettings { }
     }
 }
