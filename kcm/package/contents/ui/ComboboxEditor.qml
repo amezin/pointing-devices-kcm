@@ -11,5 +11,8 @@ ComboBox {
         when: root.property.available
         value: root.property.value
     }
-    onCurrentIndexChanged: property.setValue(currentIndex)
+    onActivated: property.setValue(index)
+    onModelChanged: if (property.available && property.value !== undefined) {
+                        currentIndex = property.value
+                    }
 }

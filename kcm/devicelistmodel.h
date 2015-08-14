@@ -10,7 +10,8 @@ class DeviceListModel : public QAbstractListModel
 public:
     enum Roles {
         NameRole = Qt::DisplayRole,
-        SettingsRole = Qt::UserRole
+        SettingsRole = Qt::UserRole,
+        DeviceRole
     };
 
     DeviceListModel(QObject *parent = Q_NULLPTR);
@@ -28,7 +29,7 @@ public:
         return items_;
     }
 
-    Q_INVOKABLE QObject *get(int index) const;
+    Q_INVOKABLE QObject *settings(int index) const;
 
 private:
     QList<DeviceSettings *> items_;

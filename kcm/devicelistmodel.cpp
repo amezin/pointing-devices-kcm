@@ -41,11 +41,14 @@ int DeviceListModel::rowCount(const QModelIndex &) const
 
 QVariant DeviceListModel::data(const QModelIndex &index, int role) const
 {
-    if (index.row() < 0 || index.row() > items_.count()) {
+    if (index.row() < 0 || index.row() >= items_.count()) {
         return QVariant();
     }
     if (role == SettingsRole) {
         return QVariant::fromValue(static_cast<QObject *>(items_[index.row()]));
+    }
+    if (role == DeviceRole) {
+        return QVariant::fromValue(static_cast<QObject *>(items_[index.row()]->device()));
     }
     if (role == NameRole) {
         auto dev = items_[index.row()]->device();
@@ -56,11 +59,12 @@ QVariant DeviceListModel::data(const QModelIndex &index, int role) const
 
 QHash<int, QByteArray> DeviceListModel::roleNames() const
 {
-    return { { SettingsRole, QByteArrayLiteral("device") },
-             { NameRole, QByteArrayLiteral("name") } };
+    return { { SettingsRole, QByteArrayLiteral("settings") },
+             { NameRole, QByteArrayLiteral("name") },
+             { DeviceRole, QByteArrayLiteral("device") } };
 }
 
-QObject *DeviceListModel::get(int index) const
+QObject *DeviceListModel::settings(int index) const
 {
     if (index < 0 || index >= items_.count()) {
         return Q_NULLPTR;

@@ -2,52 +2,22 @@ import QtQuick 2.4
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.3
 
-import org.kde.PointingDevicesKCM 1.0
-
 ColumnLayout {
-    RowLayout {
-        AttachedLabel {
-            text: i18n("Device:")
-            target: deviceCombo
-        }
+    ScrollView {
+        Layout.fillWidth: true
+        frameVisible: true
+        highlightOnFocus: true
+        Layout.preferredHeight: viewport.anchors.topMargin + viewport.anchors.bottomMargin + flickableItem.contentHeight
 
-        ComboBox {
-            id: deviceCombo
-            model: kcm.deviceList
-            textRole: "name"
-            Layout.fillWidth: true
-        }
-
-        Action {
-            id: testAction
-            text: i18n("Test")
-            enabled: kcm.canTest
-            onTriggered: kcm.test()
-        }
-
-        Action {
-            id: stopTestAction
-            text: i18n("Revert to saved settings")
-            shortcut: "Esc"
-            enabled: kcm.canRevertTest
-            onTriggered: kcm.revertTest()
-        }
-
-        Button {
-            action: testAction
-            visible: testAction.enabled
-        }
-
-        Button {
-            action: stopTestAction
-            visible: stopTestAction.enabled
+        DeviceListView {
+            id: deviceList
         }
     }
 
-    property var currentDevice: kcm.deviceList.get(deviceCombo.currentIndex)
+    property var currentDevice: kcm.deviceList.settings(deviceList.currentIndex)
     Connections {
         target: currentDevice
-        onDeviceDisconnected: deviceCombo.currentIndex = 0
+        onDeviceDisconnected: deviceList.currentIndex = -1
     }
 
     Loader {

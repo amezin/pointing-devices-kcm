@@ -170,13 +170,15 @@ QVariant XInputDevice::deviceProperty(xcb_atom_t atom)
         return QVariant();
     }
 
-    auto cookie = cookies_[atom];
+    auto cookie = cookies_.value(atom);
     cookies_.remove(atom);
 
     QScopedPointer<xcb_input_xi_get_property_reply_t, QScopedPointerPodDeleter>
             reply(xcb_input_xi_get_property_reply(connection(), cookie, Q_NULLPTR));
     if (!reply) {
-        qCCritical(POINTINGDEVICES) << "XIGetProperty request failed for" << atomCache_->getName(atom);
+        auto name = atomCache_->getName(atom);
+        qCCritical(POINTINGDEVICES) << "XIGetProperty request failed for" << name;
+        Q_EMIT devicePropertyRemoved(name); // It's effectively removed - no cookie, no reply
         return QVariant();
     }
 
@@ -184,8 +186,10 @@ QVariant XInputDevice::deviceProperty(xcb_atom_t atom)
     if (value.isValid()) {
         properties_[atom] = PropertyInfo{ value, reply->type, xcb_input_property_format_t(reply->format) };
     } else {
+        auto name = atomCache_->getName(atom);
         qCCritical(POINTINGDEVICES) << "Unknown format" << reply->format
-                                    << "of property" << atomCache_->getName(atom);
+                                    << "of property" << name;
+        Q_EMIT devicePropertyRemoved(name); // It's effectively removed - no cookie, no reply
     }
     return value;
 }

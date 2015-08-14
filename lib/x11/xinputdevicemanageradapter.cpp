@@ -30,6 +30,8 @@ XInputDeviceManagerAdapter::~XInputDeviceManagerAdapter()
 
 void XInputDeviceManagerAdapter::init()
 {
+    qRegisterMetaType<XInputDeviceAdapter*>();
+
     connect(impl, &XInputDeviceManager::deviceAdded,
             this, &XInputDeviceManagerAdapter::addDevice);
     connect(impl, &XInputDeviceManager::deviceRemoved,

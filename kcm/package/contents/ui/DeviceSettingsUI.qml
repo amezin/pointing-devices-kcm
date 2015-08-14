@@ -16,9 +16,12 @@ Item {
     }
 
     Loader {
-        anchors.horizontalCenter: settingsRoot.horizontalCenter
+        anchors.fill: parent
         active: libinputProperty.available
-        sourceComponent: LibInputSettings { }
+        sourceComponent: DevicePage {
+            enableDisableSection: LibInputEnableDisable { }
+            settingsSection: LibInputSettings { }
+        }
     }
 
     Loader {
