@@ -40,11 +40,9 @@ private:
     void update();
     void handleDeviceDestroyed(QObject *);
 
-    void setAvailable(bool);
-    void setWritable(bool);
-
     DeviceSettings *device_;
     QString name_;
-    QVariant value_;
-    bool available_, writable_;
+
+    QVariant prevValue_;
+    bool prevAvailable_, prevWritable_;
 };

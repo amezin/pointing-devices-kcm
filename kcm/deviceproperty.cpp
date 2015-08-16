@@ -5,8 +5,8 @@
 DeviceProperty::DeviceProperty(QObject *parent)
     : QObject(parent),
       device_(Q_NULLPTR),
-      available_(false),
-      writable_(false)
+      prevAvailable_(false),
+      prevWritable_(false)
 {
 }
 
@@ -40,31 +40,12 @@ void DeviceProperty::setDevice(DeviceSettings *device)
 
 bool DeviceProperty::isAvailable() const
 {
-    return available_;
-}
-
-void DeviceProperty::setAvailable(bool value)
-{
-    if (!value) {
-        setWritable(false);
-    }
-    if (value != available_) {
-        available_ = value;
-        Q_EMIT availableChanged(value);
-    }
+    return device_ && device_->isPropertySupported(name_);
 }
 
 bool DeviceProperty::isWritable() const
 {
-    return writable_;
-}
-
-void DeviceProperty::setWritable(bool value)
-{
-    if (value != writable_) {
-        writable_ = value;
-        Q_EMIT writableChanged(value);
-    }
+    return isAvailable() && device_->isPropertyWritable(name_);
 }
 
 QString DeviceProperty::name() const
@@ -74,7 +55,10 @@ QString DeviceProperty::name() const
 
 QVariant DeviceProperty::value() const
 {
-    return value_;
+    if (!isAvailable()) {
+        return QVariant();
+    }
+    return device_->value(name_);
 }
 
 void DeviceProperty::setName(const QString &name)
@@ -90,14 +74,8 @@ void DeviceProperty::setValue(const QVariant &value)
 {
     if (value.userType() == qMetaTypeId<QJSValue>()) {
         setValue(value.value<QJSValue>().toVariant());
-        return;
-    }
-    if (value != value_) {
-        value_ = value;
-        if (device_) {
-            device_->setValue(name_, value);
-        }
-        Q_EMIT valueChanged(value);
+    } else {
+        device_->setValue(name_, value);
     }
 }
 
@@ -105,23 +83,34 @@ void DeviceProperty::handleDeviceDestroyed(QObject *o)
 {
     if (device_ == o) {
         device_ = Q_NULLPTR;
+        update();
         Q_EMIT deviceChanged(device_);
     }
-
-    setAvailable(false);
 }
 
 void DeviceProperty::update()
 {
-    if (!device_) {
-        setAvailable(false);
-        return;
+    auto newAvailabe = isAvailable();
+    auto newWritable = isWritable();
+    auto newValue = value();
+
+    if (!newWritable && prevWritable_) {
+        Q_EMIT writableChanged(newWritable);
+    }
+    if (!newAvailabe && prevAvailable_) {
+        Q_EMIT availableChanged(newAvailabe);
+    }
+    if (newValue != prevValue_) {
+        Q_EMIT valueChanged(newValue);
+    }
+    if (newAvailabe && !prevAvailable_) {
+        Q_EMIT availableChanged(newAvailabe);
+    }
+    if (newWritable && !prevWritable_) {
+        Q_EMIT writableChanged(newWritable);
     }
 
-    bool available = device_->isPropertySupported(name_);
-    if (available) {
-        setValue(device_->value(name_));
-    }
-    setAvailable(available);
-    setWritable(available && device_->isPropertyWritable(name_));
+    prevValue_ = newValue;
+    prevAvailable_ = newAvailabe;
+    prevWritable_ = newWritable;
 }
