@@ -44,10 +44,6 @@ Q_SIGNALS:
     void deviceDisconnected();
 
 private:
-    void setNeedsSave(bool);
-    void setDiffersFromActive(bool);
-    void setSavedDiffersFromActive(bool);
-
     void addProperty(const QString &name);
     void removeProperty(const QString &name);
     void updateProperty(const QString &name);
@@ -58,9 +54,7 @@ private:
     static QVariant fixupType(const QVariant &, const QVariant &);
 
     bool setValueNoSignal(const QString &, const QVariant &);
-    void updateNeedsSave();
-    void updateDiffersFromActive();
-    void updateSavedDiffersFromActive();
+    void updateStatus();
 
     QPointer<InputDevice> device_;
     KConfigGroup configGroup_, defaultsGroup_;

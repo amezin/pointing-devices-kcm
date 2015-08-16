@@ -72,15 +72,8 @@ DeviceSettings::DeviceSettings(KConfig *config,
     }
 
     connect(this, &DeviceSettings::changed,
-            this, &DeviceSettings::updateNeedsSave);
-    connect(this, &DeviceSettings::changed,
-            this, &DeviceSettings::updateDiffersFromActive);
-    connect(this, &DeviceSettings::changed,
-            this, &DeviceSettings::updateSavedDiffersFromActive);
-
-    updateNeedsSave();
-    updateDiffersFromActive();
-    updateSavedDiffersFromActive();
+            this, &DeviceSettings::updateStatus);
+    updateStatus();
 }
 
 DeviceSettings::~DeviceSettings()
@@ -115,30 +108,6 @@ bool DeviceSettings::differsFromActive() const
 bool DeviceSettings::savedDiffersFromActive() const
 {
     return savedDiffersFromActive_;
-}
-
-void DeviceSettings::setNeedsSave(bool needs)
-{
-    if (needsSave_ != needs) {
-        needsSave_ = needs;
-        Q_EMIT needsSaveChanged();
-    }
-}
-
-void DeviceSettings::setDiffersFromActive(bool differs)
-{
-    if (differsFromActive_ != differs) {
-        differsFromActive_ = differs;
-        Q_EMIT differsFromActiveChanged();
-    }
-}
-
-void DeviceSettings::setSavedDiffersFromActive(bool differs)
-{
-    if (savedDiffersFromActive_ != differs) {
-        savedDiffersFromActive_ = differs;
-        Q_EMIT savedDiffersFromActiveChanged();
-    }
 }
 
 QVariant DeviceSettings::value(const QString &prop) const
@@ -284,7 +253,7 @@ void DeviceSettings::apply()
     }
 
     device_->setProperties(values_);
-    updateDiffersFromActive();
+    updateStatus();
 }
 
 void DeviceSettings::applySaved()
@@ -316,40 +285,42 @@ void DeviceSettings::save()
         }
     }
     configGroup_.sync();
-    updateNeedsSave();
+    updateStatus();
 }
 
-void DeviceSettings::updateNeedsSave()
+void DeviceSettings::updateStatus()
 {
     bool needsSave = false;
-    Q_FOREACH (const QString &prop, values_.keys()) {
-        if (!compareSettings(values_.value(prop), savedValue(prop))) {
-            needsSave = true;
-        }
-    }
-    setNeedsSave(needsSave);
-}
-
-void DeviceSettings::updateDiffersFromActive()
-{
     bool differsFromActive = false;
-    Q_FOREACH (const QString &prop, values_.keys()) {
-        if (!compareSettings(values_.value(prop), deviceValue(prop))) {
-            differsFromActive = true;
-        }
-    }
-    setDiffersFromActive(differsFromActive);
-}
+    bool savedDiffersFromActive = false;
 
-void DeviceSettings::updateSavedDiffersFromActive()
-{
-    bool differsFromActive = false;
     Q_FOREACH (const QString &prop, values_.keys()) {
+        auto current = values_.value(prop);
         auto device = deviceValue(prop);
         auto saved = fixupType(savedValue(prop), device);
-        if (!compareSettings(saved, device)) {
+
+        if (!compareSettings(current, saved)) {
+            needsSave = true;
+        }
+        if (!compareSettings(current, device)) {
             differsFromActive = true;
         }
+        if (!compareSettings(saved, device)) {
+            savedDiffersFromActive = true;
+        }
     }
-    setSavedDiffersFromActive(differsFromActive);
+
+    std::swap(needsSave, needsSave_);
+    std::swap(differsFromActive, differsFromActive_);
+    std::swap(savedDiffersFromActive, savedDiffersFromActive_);
+
+    if (needsSave_ != needsSave) {
+        Q_EMIT needsSaveChanged();
+    }
+    if (differsFromActive_ != differsFromActive) {
+        Q_EMIT differsFromActiveChanged();
+    }
+    if (savedDiffersFromActive_ != savedDiffersFromActive) {
+        Q_EMIT savedDiffersFromActiveChanged();
+    }
 }
