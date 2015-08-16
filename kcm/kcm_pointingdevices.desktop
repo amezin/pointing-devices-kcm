@@ -11,3 +11,10 @@ X-KDE-System-Settings-Parent-Category=input-devices
 Name=Pointing Devices
 Comment=Pointing Devices
 Categories=Qt;KDE;X-KDE-settings-hardware;
+
+X-KDE-PluginInfo-Author=Alexander Mezin
+X-KDE-PluginInfo-Email=mezin.alexander@gmail.com
+X-KDE-PluginInfo-License=GPL
+X-KDE-PluginInfo-Name=kcm_pointingdevices
+X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-Website=
