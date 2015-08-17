@@ -3,8 +3,6 @@ add_library(kcm_pointingdevices MODULE
             kcm.cpp
             devicesettings.h
             devicesettings.cpp
-            devicelistmodel.h
-            devicelistmodel.cpp
             deviceproperty.h
             deviceproperty.cpp)
 target_link_libraries(kcm_pointingdevices

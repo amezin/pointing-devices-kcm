@@ -28,6 +28,7 @@ GridLayout {
             minimumValue: -1.0
             maximumValue: 1.0
             Layout.fillWidth: true
+            focus: true
         }
 
         AttachedLabel {
@@ -62,12 +63,14 @@ GridLayout {
         text: i18n("Right handed")
         checked: !leftHanded.checked
         enabled: leftHanded.enabled
+        exclusiveGroup: buttonOrder
     }
 
     RadioButtonEditor {
         id: leftHanded
         property: SimpleProperty { name: "libinput Left Handed Enabled" }
         text: i18n("Left handed")
+        exclusiveGroup: buttonOrder
     }
 
     AttachedLabel {

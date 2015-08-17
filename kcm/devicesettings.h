@@ -12,6 +12,12 @@ class DeviceProperty;
 class DeviceSettings : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(InputDevice* device READ device NOTIFY deviceDisconnected)
+
+    Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged)
+    Q_PROPERTY(bool differsFromActive READ differsFromActive NOTIFY differsFromActiveChanged)
+    Q_PROPERTY(bool savedDiffersFromActive READ savedDiffersFromActive NOTIFY savedDiffersFromActiveChanged)
 public:
     DeviceSettings(KConfig *config, KConfig *defaults, InputDevice *,
                    QObject *parent = Q_NULLPTR);
@@ -25,6 +31,10 @@ public:
     bool differsFromActive() const;
     bool savedDiffersFromActive() const;
 
+    QVariant value(const QString &) const;
+    void setValue(const QString &, const QVariant &);
+
+public Q_SLOTS:
     void loadSaved();
     void loadDefaults();
     void loadActive();
@@ -32,9 +42,6 @@ public:
     void apply();
     void save();
     void applySaved();
-
-    QVariant value(const QString &) const;
-    void setValue(const QString &, const QVariant &);
 
 Q_SIGNALS:
     void needsSaveChanged();
