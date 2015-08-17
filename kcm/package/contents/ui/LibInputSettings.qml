@@ -16,6 +16,7 @@ GridLayout {
     RowLayout {
         Layout.columnSpan: 2
         Layout.fillWidth: true
+        visible: accelSpeed.property.available
 
         AttachedLabel {
             text: i18n("Slow")
@@ -63,6 +64,7 @@ GridLayout {
         text: i18n("Right handed")
         checked: !leftHanded.checked
         enabled: leftHanded.enabled
+        visible: leftHanded.visible
         exclusiveGroup: buttonOrder
     }
 
@@ -142,6 +144,7 @@ GridLayout {
     ColumnLayout {
         Layout.columnSpan: 2
         spacing: units.smallSpacing
+        visible: tapToClick.property.available
 
         CheckboxEditor {
             id: tapToClick
