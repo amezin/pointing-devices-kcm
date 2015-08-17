@@ -4,12 +4,10 @@
 #include <KDEDModule>
 #include <KPluginFactory>
 
-#include "kded_pointingdevices_export.h"
-
 class InputDevice;
 class InputDeviceManager;
 
-class KDED_POINTINGDEVICES_EXPORT PointingDevicesKDED : public KDEDModule
+class PointingDevicesKDED : public KDEDModule
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.kde.PointingDevices")
