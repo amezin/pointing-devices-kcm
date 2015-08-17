@@ -17,5 +17,3 @@ generate_export_header(kded_pointingdevices)
 
 install(TARGETS kded_pointingdevices DESTINATION ${PLUGIN_INSTALL_DIR}/kf5/kded)
 kcoreaddons_desktop_to_json(kded_pointingdevices kded_pointingdevices.desktop)
-
-add_subdirectory(test)
