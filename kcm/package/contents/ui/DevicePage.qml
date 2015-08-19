@@ -47,7 +47,7 @@ ColumnLayout {
 
     Connections {
         target: pageLoader
-        onItemChanged: {
+        onCurrentItemChanged: {
             if (testing) {
                 testing = false
                 pageSettings.applySaved()

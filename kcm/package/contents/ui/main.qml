@@ -15,7 +15,7 @@ ColumnLayout {
             id: pageList
             focus: true
             orientation: Qt.Horizontal
-            highlightMoveDuration: units.shortDuration
+            highlightMoveDuration: units.longDuration
             contentHeight: contentItem.childrenRect.height
 
             SystemPalette {
@@ -93,11 +93,44 @@ ColumnLayout {
         }
     }
 
-    Loader {
+    StackView {
         id: pageLoader
         Layout.fillWidth: true
         Layout.fillHeight: true
-        sourceComponent: pageList.currentItem && pageList.currentItem.pageComponent
+
+        property Component sourceComponent: pageList.currentItem && pageList.currentItem.pageComponent
+        property int prevIndex: 0
+        property bool moveLeft: false
+        onSourceComponentChanged: {
+            moveLeft = (prevIndex > pageList.currentIndex)
+            prevIndex = pageList.currentIndex
+            if (!sourceComponent) {
+                clear()
+            } else {
+                push({item: sourceComponent, replace: true})
+            }
+        }
+
+        delegate: StackViewDelegate {
+            replaceTransition: StackViewTransition {
+                PropertyAnimation {
+                    target: enterItem
+                    property: "x"
+                    from: pageLoader.moveLeft ? -target.width : target.width
+                    to: 0
+                    duration: units.longDuration
+                    easing.type: Easing.OutCubic
+                }
+                PropertyAnimation {
+                    target: exitItem
+                    property: "x"
+                    from: 0
+                    to: pageLoader.moveLeft ? target.width : -target.width
+                    duration: units.longDuration
+                    easing.type: Easing.OutCubic
+                }
+            }
+        }
     }
 
     MessageDialog {
