@@ -22,7 +22,6 @@ MouseArea {
             Layout.alignment: Qt.AlignHCenter
             width: units.iconSizes.huge
             height: width
-            icon: item.icon
         }
 
         Label {
