@@ -129,7 +129,6 @@ ColumnLayout {
         highlightOnFocus: true
 
         Loader {
-            x: Math.max(0, (scrollArea.viewport.width - scrollArea.flickableItem.contentWidth) / 2)
             sourceComponent: settingsSection
         }
     }
