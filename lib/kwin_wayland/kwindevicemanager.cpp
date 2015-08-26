@@ -11,7 +11,7 @@ K_PLUGIN_FACTORY(KWinDeviceManagerFactory, registerPlugin<KWinDeviceManager>();)
 KWinDeviceManager::KWinDeviceManager(QObject *parent, const QVariantList &)
     : InputDeviceManager(parent)
 {
-    interface_ = new OrgKdeKwinInputDeviceManagerInterface(QStringLiteral("org.kde.KWin"),
+    interface_ = new OrgKdeKWinInputDeviceManagerInterface(QStringLiteral("org.kde.KWin"),
                                                            QStringLiteral("/Input"),
                                                            QDBusConnection::sessionBus(),
                                                            this);
@@ -19,9 +19,9 @@ KWinDeviceManager::KWinDeviceManager(QObject *parent, const QVariantList &)
         return;
     }
 
-    connect(interface_, &OrgKdeKwinInputDeviceManagerInterface::deviceAdded,
+    connect(interface_, &OrgKdeKWinInputDeviceManagerInterface::deviceAdded,
             this, &KWinDeviceManager::addDevice);
-    connect(interface_, &OrgKdeKwinInputDeviceManagerInterface::deviceRemoved,
+    connect(interface_, &OrgKdeKWinInputDeviceManagerInterface::deviceRemoved,
             this, &KWinDeviceManager::removeDevice);
 
     Q_FOREACH (auto path, interface_->devices().value()) {
@@ -51,7 +51,7 @@ void KWinDeviceManager::addDevice(const QDBusObjectPath &path)
         }
     }
 
-    auto dev = new OrgKdeKwinInputDeviceInterface(QStringLiteral("org.kde.KWin"),
+    auto dev = new OrgKdeKWinInputDeviceInterface(QStringLiteral("org.kde.KWin"),
                                                   path.path(),
                                                   QDBusConnection::sessionBus(),
                                                   this);

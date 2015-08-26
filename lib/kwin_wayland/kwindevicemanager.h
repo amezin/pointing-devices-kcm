@@ -3,7 +3,7 @@
 #include "devicemanager.h"
 
 class QDBusObjectPath;
-class OrgKdeKwinInputDeviceManagerInterface;
+class OrgKdeKWinInputDeviceManagerInterface;
 class KWinDevice;
 
 class KWinDeviceManager : public InputDeviceManager
@@ -19,6 +19,6 @@ private:
     void addDevice(const QDBusObjectPath &);
     void removeDevice(const QDBusObjectPath &);
 
-    OrgKdeKwinInputDeviceManagerInterface *interface_;
+    OrgKdeKWinInputDeviceManagerInterface *interface_;
     QList<KWinDevice *> devices_;
 };

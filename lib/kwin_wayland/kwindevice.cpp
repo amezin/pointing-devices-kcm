@@ -6,7 +6,7 @@
 #include "deviceinterface.h"
 #include "kwinproperty.h"
 
-KWinDevice::KWinDevice(OrgKdeKwinInputDeviceInterface *device, QObject *parent)
+KWinDevice::KWinDevice(OrgKdeKWinInputDeviceInterface *device, QObject *parent)
     : InputDevice(parent), device_(device)
 {
     device_->setParent(this);

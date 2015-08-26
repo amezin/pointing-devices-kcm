@@ -5,18 +5,18 @@
 
 #include "device.h"
 
-class OrgKdeKwinInputDeviceInterface;
+class OrgKdeKWinInputDeviceInterface;
 class KWinProperty;
 
 class KWinDevice : public InputDevice
 {
     Q_OBJECT
 public:
-    explicit KWinDevice(OrgKdeKwinInputDeviceInterface *device,
+    explicit KWinDevice(OrgKdeKWinInputDeviceInterface *device,
                         QObject *parent = Q_NULLPTR);
     ~KWinDevice() Q_DECL_OVERRIDE;
 
-    OrgKdeKwinInputDeviceInterface *device() const
+    OrgKdeKWinInputDeviceInterface *device() const
     {
         return device_;
     }
@@ -39,7 +39,7 @@ private:
     void updatePropValue(const QString &, KWinProperty *);
     void addProp(const QString &, KWinProperty *);
 
-    OrgKdeKwinInputDeviceInterface *device_;
+    OrgKdeKWinInputDeviceInterface *device_;
     QHash<QString, KWinProperty *> props_;
     QStringList supported_;
 };
